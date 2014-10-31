@@ -13,9 +13,9 @@
 		00B784B50FF439BC000DE1D7 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B10FF439BC000DE1D7 /* AudioUnit.framework */; };
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 526114993F034EFEAD0FF5B3 /* CinderApp.icns */; };
+		49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */ = {isa = PBXBuildFile; fileRef = 49FBDEF31A03FB5F0019CAB2 /* usa.png */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
-		5F6ED7B91A032A6700613FED /* usa.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F6ED7B81A032A6700613FED /* usa.png */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C42E9BA72DCF4A808AD3154F /* AlienLanderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */; };
 /* End PBXBuildFile section */
@@ -30,11 +30,11 @@
 		191AC45670D244B4BECCEE81 /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		49FBDEF31A03FB5F0019CAB2 /* usa.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = usa.png; path = ../resources/usa.png; sourceTree = "<group>"; };
 		526114993F034EFEAD0FF5B3 /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = CinderApp.icns; path = ../resources/CinderApp.icns; sourceTree = "<group>"; };
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		5323E6B50EAFCA7E003A9687 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
 		53A9217A3EE34D10A08774F0 /* AlienLander_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = "\"\""; path = AlienLander_Prefix.pch; sourceTree = "<group>"; };
-		5F6ED7B81A032A6700613FED /* usa.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = usa.png; path = ../assets/usa.png; sourceTree = "<group>"; };
 		6CA7596354C54D97914CCD89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* AlienLander.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlienLander.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = AlienLanderApp.cpp; path = ../src/AlienLanderApp.cpp; sourceTree = "<group>"; };
@@ -131,7 +131,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				5F6ED7B81A032A6700613FED /* usa.png */,
+				49FBDEF31A03FB5F0019CAB2 /* usa.png */,
 				526114993F034EFEAD0FF5B3 /* CinderApp.icns */,
 				6CA7596354C54D97914CCD89 /* Info.plist */,
 			);
@@ -200,7 +200,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */,
-				5F6ED7B91A032A6700613FED /* usa.png in Resources */,
+				49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

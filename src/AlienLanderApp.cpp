@@ -4,6 +4,7 @@
 #include "cinder/gl/Vbo.h"
 #include "cinder/Utilities.h"
 #include "cinder/Perlin.h"
+#include "Resources.h"
 
 
 using namespace ci;
@@ -40,7 +41,7 @@ void AlienLanderApp::prepareSettings( Settings *settings )
 void AlienLanderApp::setup()
 {
 	try {
-		mMap = Channel32f(loadImage(loadAsset("usa.png")));
+		mMap = Channel32f(loadImage(loadResource(RES_MAP)));
 	}
 	catch( ... ) {
 		console() << "unable to load the texture file!" << std::endl;
@@ -103,14 +104,9 @@ void AlienLanderApp::draw()
 {
 	gl::clear( Color::gray(0) );
 
-	//  gl::enableWireframe();
-
 	gl::pushModelView();
 
 	gl::translate(mMargin, 2 * mMargin);
-
-	//  gl::drawRange(mMesh);
-
 
 	float yScale = (getWindowHeight() - (2 * mMargin)) / mLines;
 	float xScale = (getWindowWidth() - (0 * mMargin)) / mPoints;
@@ -157,8 +153,6 @@ void AlienLanderApp::draw()
 	 }
 	 */
 	gl::popModelView();
-
-	//  gl::disableWireframe();
 }
 
 CINDER_APP_NATIVE( AlienLanderApp, RendererGl )
