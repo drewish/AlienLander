@@ -17,10 +17,13 @@ public:
 	void setup();
 	void resize();
 	void mouseMove( MouseEvent event );
+	void touchesMoved( TouchEvent event );
 	void keyDown( KeyEvent event );
 	void update();
 	void draw();
 
+	Vec2f mA, mAP;
+	Vec2f mB, mBP;
 
 	CameraOrtho mCam;
 	int mPoints = 32;
@@ -34,6 +37,7 @@ public:
 
 void AlienLanderApp::prepareSettings( Settings *settings )
 {
+    settings->enableMultiTouch();
 	settings->enableHighDensityDisplay();
 	settings->setWindowSize(800, 800);
 }
@@ -72,6 +76,29 @@ void AlienLanderApp::mouseMove( MouseEvent event )
 {
 }
 
+void AlienLanderApp::touchesMoved( TouchEvent event )
+{
+	//	console() << "Moved: " << event << std::endl;
+	const vector<TouchEvent::Touch>&touches = event.getTouches();
+	if (touches.size() == 2) {
+		//		console() << "working" << event << endl;
+		mA = touches[0].getPos();
+		mAP = touches[0].getPrevPos();
+		mB = touches[1].getPos();
+		mBP = touches[1].getPrevPos();
+
+		float mLength = mA.distanceSquared(mB);
+
+//		if (previous != 0) {
+//			mScale += mLength - previous;
+//			mScale = math<float>::clamp(mScale, 1, 100000);
+//		}
+//		console() << mScale << endl;
+		//		touches[0].getPrevPos();
+	}
+	//	for( vector<TouchEvent::Touch>::const_iterator touchIt = event.getTouches().begin(); touchIt != event.getTouches().end(); ++touchIt )
+	//		mActivePoints[touchIt->getId()].addPoint( touchIt->getPos() );
+}
 
 void AlienLanderApp::keyDown( KeyEvent event )
 {
