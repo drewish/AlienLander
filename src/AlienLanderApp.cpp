@@ -19,11 +19,10 @@ public:
     void mouseMove( MouseEvent event );
     void touchesMoved( TouchEvent event );
     void keyDown( KeyEvent event );
-    void update();
+//    void update();
     void draw();
 
-    Vec2f mA, mAP;
-    Vec2f mB, mBP;
+    Vec2f mDelta1, mDelta2;
 
     CameraOrtho mCam;
     int mPoints = 32;
@@ -64,11 +63,11 @@ void AlienLanderApp::resize()
 {
     int height = getWindowHeight();
     int width = getWindowWidth();
-    mMargin = 20;//round( perCube * 0.45 );
-    mPoints = (width - (2 * mMargin)) / 20;
-    mLines = (height - (2 * mMargin)) / 20;
+    mMargin = 15;
+    mPoints = (width - (2 * mMargin)) / mMargin;
+    mLines = (height - (2 * mMargin)) / mMargin;
 
-    mCam.setOrtho( 0, width, height, 0, -1000, 1000 );
+    mCam.setOrtho( 0, width, height, 0, -990, 990 );
     gl::setMatrices( mCam );
 }
 
@@ -81,28 +80,19 @@ void AlienLanderApp::touchesMoved( TouchEvent event )
     //  console() << "Moved: " << event << std::endl;
     const vector<TouchEvent::Touch>&touches = event.getTouches();
     if (touches.size() == 2) {
-        //      console() << "working" << event << endl;
-        mA = touches[0].getPos();
-        mAP = touches[0].getPrevPos();
-        mB = touches[1].getPos();
-        mBP = touches[1].getPrevPos();
+        mDelta1 = touches[0].getPrevPos() - touches[0].getPos();
+        mDelta2 = touches[1].getPrevPos() - touches[1].getPos();
 
-        float mLength = mA.distanceSquared(mB);
-
-        //      if (previous != 0) {
-        //          mScale += mLength - previous;
-        //          mScale = math<float>::clamp(mScale, 1, 100000);
-        //      }
-        //      console() << mScale << endl;
-        //      touches[0].getPrevPos();
+        mX += (mDelta1.x + mDelta2.x) / 8;
+        mY += (mDelta1.y + mDelta2.y) / 8;
     }
     //  for( vector<TouchEvent::Touch>::const_iterator touchIt = event.getTouches().begin(); touchIt != event.getTouches().end(); ++touchIt )
-    //      mActivePoints[touchIt->getId()].addPoint( touchIt->getPos() );
+    //    mActivePoints[touchIt->getId()].addPoint( touchIt->getPos() );
 }
 
 void AlienLanderApp::keyDown( KeyEvent event )
 {
-    float offset = 5;
+    float offset = 1;
     switch( event.getCode() ) {
         case KeyEvent::KEY_ESCAPE:
             quit();
@@ -122,21 +112,17 @@ void AlienLanderApp::keyDown( KeyEvent event )
     }
 }
 
-void AlienLanderApp::update()
-{
-
-}
-
 void AlienLanderApp::draw()
 {
     gl::clear( Color::gray(0) );
 
     gl::pushModelView();
 
-    gl::translate(mMargin, 2 * mMargin);
+    gl::translate(mMargin, 4 * mMargin);
 
-    float yScale = (getWindowHeight() - (2 * mMargin)) / mLines;
-    float xScale = (getWindowWidth() - (0 * mMargin)) / mPoints;
+    float xScale = (getWindowWidth() - (1.0 * mMargin)) / mPoints;
+    // sqrt(2) accouts for the 45 degree rotation
+    float yScale = (getWindowHeight() * sqrt(2) - (6.0 * mMargin)) / mLines;
     Channel32f::Iter iter = mMap.getIter(Area((int)mX, (int)mY, (int)mX + mPoints, (int)mY + mLines));
     while( iter.line() ) {
         PolyLine<Vec2f> line;
@@ -145,20 +131,20 @@ void AlienLanderApp::draw()
 
         gl::pushModelView();
 
+        gl::rotate(Vec3f(45,0,0));
         gl::translate(0, (iter.y() - mY) * yScale, 0);
-        gl::rotate(Vec3f(60,0,0));
 
-        point = Vec2f(0 * xScale, 0);
+        point = Vec2f((iter.x() - mX) * xScale, 0);
         mask.moveTo(point);
 
         while( iter.pixel() ) {
-            float val = 8 * pow(10 * iter.v(), 2);
+            float val = 200 * pow(1 * iter.v(), 2);
             point = Vec2f((iter.x() - mX) * xScale, -val);
             mask.lineTo( point );
             line.push_back( point );
         }
 
-        point = Vec2f((mPoints - 1) * xScale, 0);
+        point = Vec2f((iter.x() - mX) * xScale, 0);
         mask.lineTo(point);
         mask.close();
 
@@ -171,7 +157,6 @@ void AlienLanderApp::draw()
 
         gl::popModelView();
     }
-
 
     /*
      // Save a frame in the home directory.
