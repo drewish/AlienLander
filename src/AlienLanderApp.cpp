@@ -30,6 +30,7 @@ public:
     int mMargin = 20;
     float mX = 0;
     float mY = 0;
+    float mRatio = 0.5;
     Perlin mPerlin = Perlin(16);
     Channel32f mMap = Channel32f(1024, 1024);
 };
@@ -68,11 +69,13 @@ void AlienLanderApp::resize()
     mLines = (height - (2 * mMargin)) / mMargin;
 
     mCam.setOrtho( 0, width, height, 0, -990, 990 );
-    gl::setMatrices( mCam );
+//    gl::setMatrices( mCam );
 }
 
 void AlienLanderApp::mouseMove( MouseEvent event )
 {
+    int height = getWindowHeight();
+    mRatio = math<float>::clamp(event.getY(), 0, height) / height;
 }
 
 void AlienLanderApp::touchesMoved( TouchEvent event )
@@ -114,15 +117,22 @@ void AlienLanderApp::keyDown( KeyEvent event )
 
 void AlienLanderApp::draw()
 {
-    gl::clear( Color::gray(0) );
+
+    Color8u blue = Color8u(59, 151, 221);
+    Color8u red = Color8u(205, 138, 55);
+
+
+    gl::clear( Color::gray(0.1) );
 
     gl::pushModelView();
 
-    gl::translate(mMargin, 4 * mMargin);
+    gl::translate(mMargin, mRatio * getWindowHeight() / 2);
+    gl::rotate(Vec3f(mRatio * 90,0,0));
+
+
 
     float xScale = (getWindowWidth() - (1.0 * mMargin)) / mPoints;
-    // sqrt(2) accouts for the 45 degree rotation
-    float yScale = (getWindowHeight() * sqrt(2) - (6.0 * mMargin)) / mLines;
+    float yScale = (getWindowHeight() - (6.0 * mMargin)) / mLines;
     Channel32f::Iter iter = mMap.getIter(Area((int)mX, (int)mY, (int)mX + mPoints, (int)mY + mLines));
     while( iter.line() ) {
         PolyLine<Vec2f> line;
@@ -131,8 +141,8 @@ void AlienLanderApp::draw()
 
         gl::pushModelView();
 
-        gl::rotate(Vec3f(45,0,0));
         gl::translate(0, (iter.y() - mY) * yScale, 0);
+        gl::rotate(Vec3f(-mRatio * 90,0,0));
 
         point = Vec2f((iter.x() - mX) * xScale, 0);
         mask.moveTo(point);
@@ -151,7 +161,7 @@ void AlienLanderApp::draw()
         gl::color( Color::black() );
         gl::drawSolid(mask);
 
-        gl::color( Color::white() );
+        gl::color(blue);
         gl::lineWidth(2);
         gl::draw(line);
 

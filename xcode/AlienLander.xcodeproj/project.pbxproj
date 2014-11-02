@@ -37,7 +37,7 @@
 		53A9217A3EE34D10A08774F0 /* AlienLander_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = "\"\""; path = AlienLander_Prefix.pch; sourceTree = "<group>"; };
 		6CA7596354C54D97914CCD89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* AlienLander.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlienLander.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = AlienLanderApp.cpp; path = ../src/AlienLanderApp.cpp; sourceTree = "<group>"; };
+		FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = AlienLanderApp.cpp; path = ../src/AlienLanderApp.cpp; sourceTree = "<group>"; usesTabs = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +118,7 @@
 			);
 			name = AlienLander;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		29B97315FDCFA39411CA2CEA /* Headers */ = {
 			isa = PBXGroup;
