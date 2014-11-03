@@ -8,11 +8,11 @@ TODO list:
 #include "cinder/app/AppNative.h"
 #include "cinder/Camera.h"
 #include "cinder/gl/gl.h"
-#include "cinder/gl/Vbo.h"
-#include "cinder/Utilities.h"
+#include "cinder/gl/Texture.h"
 #include "cinder/Perlin.h"
+#include "cinder/Text.h"
+#include "cinder/Utilities.h"
 #include "Resources.h"
-
 
 using namespace ci;
 using namespace ci::app;
@@ -45,6 +45,9 @@ public:
     float mRatio = 0.5;
     Perlin mPerlin = Perlin(16);
     Channel32f mMap = Channel32f(1024, 1024);
+
+    gl::Texture	mStatusTexture;
+
 };
 
 void AlienLanderApp::prepareSettings( Settings *settings )
@@ -132,21 +135,29 @@ void AlienLanderApp::update()
     mAcc += -0.00001; // gravity
     mVel += mAcc;
     mRatio += mVel;
-    mAcc = 0;
-
-    console() << mRatio << endl;
     mRatio = math<float>::clamp(mRatio, 0, 1);
 
     // Consider this landed...
     if (mRatio <= 0) mVel = 0;
+
+    // HACKY: Render some display info. Better to do these as vectors.
+    TextLayout simple;
+    simple.setFont( Font( "Arial", 24 ) );
+    simple.setColor( Color::white() );
+    simple.addLine( string("Acc: ") + to_string(mAcc) );
+    simple.addLine( string("Vel: ") + to_string(mVel) );
+    simple.addLine( "Alt: " + to_string(mRatio) );
+    mStatusTexture = gl::Texture( simple.render( true, true ) );
+
+    // Reset the acceleration for the next pass
+    mAcc = 0;
 }
 
 void AlienLanderApp::draw()
 {
 
-    Color8u blue = Color8u(66, 161, 235);//(59, 151, 221);
+    Color8u blue = Color8u(66, 161, 235);
     Color8u red = Color8u(205, 138, 55);
-
 
     gl::clear( Color::gray(0.1) );
 
@@ -154,8 +165,6 @@ void AlienLanderApp::draw()
 
     gl::translate(mMargin, (1.0 - mRatio) * getWindowHeight() / 2);
     gl::rotate(Vec3f((1.0 - mRatio) * 90,0,0));
-
-
 
     float xScale = (getWindowWidth() - (1.0 * mMargin)) / mPoints;
     float yScale = (getWindowHeight() - (6.0 * mMargin)) / mLines;
@@ -194,6 +203,7 @@ void AlienLanderApp::draw()
         gl::popModelView();
     }
 
+
     /*
      // Save a frame in the home directory.
      if (getElapsedFrames() == 1) {
@@ -201,6 +211,9 @@ void AlienLanderApp::draw()
      }
      */
     gl::popModelView();
+
+    gl::draw( mStatusTexture, Vec2f( 10, 10 ) );
+
 }
 
 CINDER_APP_NATIVE( AlienLanderApp, RendererGl )
