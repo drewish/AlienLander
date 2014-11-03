@@ -1,3 +1,10 @@
+/*
+TODO list:
+- Fix rotation so you land at spot that's in the middle of the board at max 
+  altitude.
+- Write code for drawing numbers
+- Start drawing a dashboard
+*/
 #include "cinder/app/AppNative.h"
 #include "cinder/Camera.h"
 #include "cinder/gl/gl.h"
@@ -19,7 +26,7 @@ public:
     void mouseMove( MouseEvent event );
     void touchesMoved( TouchEvent event );
     void keyDown( KeyEvent event );
-//    void update();
+    void update();
     void draw();
 
     Vec2f mDelta1, mDelta2;
@@ -30,6 +37,11 @@ public:
     int mMargin = 20;
     float mX = 0;
     float mY = 0;
+
+    // Only for vertical:
+    float mAcc = 0;
+    float mVel = 0;
+
     float mRatio = 0.5;
     Perlin mPerlin = Perlin(16);
     Channel32f mMap = Channel32f(1024, 1024);
@@ -68,19 +80,18 @@ void AlienLanderApp::resize()
     mPoints = (width - (2 * mMargin)) / mMargin;
     mLines = (height - (2 * mMargin)) / mMargin;
 
-    mCam.setOrtho( 0, width, height, 0, -990, 990 );
+//    mCam.setOrtho( 0, width, height, 0, -990, 990 );
 //    gl::setMatrices( mCam );
 }
 
 void AlienLanderApp::mouseMove( MouseEvent event )
 {
-    int height = getWindowHeight();
-    mRatio = math<float>::clamp(event.getY(), 0, height) / height;
+//    int height = getWindowHeight();
+//    mRatio = 1 - (math<float>::clamp(event.getY(), 0, height) / height);
 }
 
 void AlienLanderApp::touchesMoved( TouchEvent event )
 {
-    //  console() << "Moved: " << event << std::endl;
     const vector<TouchEvent::Touch>&touches = event.getTouches();
     if (touches.size() == 2) {
         mDelta1 = touches[0].getPrevPos() - touches[0].getPos();
@@ -89,8 +100,6 @@ void AlienLanderApp::touchesMoved( TouchEvent event )
         mX += (mDelta1.x + mDelta2.x) / 8;
         mY += (mDelta1.y + mDelta2.y) / 8;
     }
-    //  for( vector<TouchEvent::Touch>::const_iterator touchIt = event.getTouches().begin(); touchIt != event.getTouches().end(); ++touchIt )
-    //    mActivePoints[touchIt->getId()].addPoint( touchIt->getPos() );
 }
 
 void AlienLanderApp::keyDown( KeyEvent event )
@@ -99,6 +108,9 @@ void AlienLanderApp::keyDown( KeyEvent event )
     switch( event.getCode() ) {
         case KeyEvent::KEY_ESCAPE:
             quit();
+            break;
+        case KeyEvent::KEY_SPACE:
+            mAcc += 0.00008;
             break;
         case KeyEvent::KEY_DOWN:
             mY += offset;
@@ -115,10 +127,24 @@ void AlienLanderApp::keyDown( KeyEvent event )
     }
 }
 
+void AlienLanderApp::update()
+{
+    mAcc += -0.00001; // gravity
+    mVel += mAcc;
+    mRatio += mVel;
+    mAcc = 0;
+
+    console() << mRatio << endl;
+    mRatio = math<float>::clamp(mRatio, 0, 1);
+
+    // Consider this landed...
+    if (mRatio <= 0) mVel = 0;
+}
+
 void AlienLanderApp::draw()
 {
 
-    Color8u blue = Color8u(59, 151, 221);
+    Color8u blue = Color8u(66, 161, 235);//(59, 151, 221);
     Color8u red = Color8u(205, 138, 55);
 
 
@@ -126,8 +152,8 @@ void AlienLanderApp::draw()
 
     gl::pushModelView();
 
-    gl::translate(mMargin, mRatio * getWindowHeight() / 2);
-    gl::rotate(Vec3f(mRatio * 90,0,0));
+    gl::translate(mMargin, (1.0 - mRatio) * getWindowHeight() / 2);
+    gl::rotate(Vec3f((1.0 - mRatio) * 90,0,0));
 
 
 
@@ -142,7 +168,7 @@ void AlienLanderApp::draw()
         gl::pushModelView();
 
         gl::translate(0, (iter.y() - mY) * yScale, 0);
-        gl::rotate(Vec3f(-mRatio * 90,0,0));
+        gl::rotate(Vec3f((1.0 - mRatio) * -90,0,0));
 
         point = Vec2f((iter.x() - mX) * xScale, 0);
         mask.moveTo(point);
