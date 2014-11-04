@@ -3,7 +3,10 @@ TODO list:
 - Fix rotation so you land at spot that's in the middle of the board at max 
   altitude.
 - Write code for drawing numbers
-- Start drawing a dashboard
+- Display height over ground
+- Detect landing/collision
+- Use thrusters for horizontal movement
+- Add concept of fuel
 */
 #include "cinder/app/AppNative.h"
 #include "cinder/Camera.h"
