@@ -1,6 +1,6 @@
 # Alien Lander
 
-I’ve been playing around trying to replicate the amazing computer graphics Alan Sutcliffe created for the [landing sequence](https://www.flickr.com/photos/mr_carl/6047866844/in/set-72157627318864775/) in the 1979 movie Alien.
+I’ve been playing around trying to replicate the amazing computer graphics [Alan Sutcliffe](http://www.bcs.org/content/conWebDoc/52263) created for the [landing sequence](https://www.flickr.com/photos/mr_carl/6047866844/in/set-72157627318864775/) in the 1979 movie Alien.
 
 ![Screenshot](PREVIEW.png)
 
