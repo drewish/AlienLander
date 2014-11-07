@@ -15,7 +15,9 @@ TODO list:
 #include "cinder/Perlin.h"
 #include "cinder/Text.h"
 #include "cinder/Utilities.h"
+#include <boost/format.hpp>
 #include "Resources.h"
+#include "SegmentDisplay.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -48,9 +50,7 @@ public:
     float mRatio = 0.5;
     Perlin mPerlin = Perlin(16);
     Channel32f mMap = Channel32f(1024, 1024);
-
-    gl::Texture	mStatusTexture;
-
+    SegmentDisplay mDisplay;
 };
 
 void AlienLanderApp::prepareSettings( Settings *settings )
@@ -150,10 +150,6 @@ void AlienLanderApp::update()
     simple.addLine( string("Acc: ") + to_string(mAcc) );
     simple.addLine( string("Vel: ") + to_string(mVel) );
     simple.addLine( "Alt: " + to_string(mRatio) );
-    mStatusTexture = gl::Texture( simple.render( true, true ) );
-
-    // Reset the acceleration for the next pass
-    mAcc = 0;
 }
 
 void AlienLanderApp::draw()
@@ -207,16 +203,19 @@ void AlienLanderApp::draw()
     }
 
 
-    /*
-     // Save a frame in the home directory.
-     if (getElapsedFrames() == 1) {
-     writeImage( getHomeDirectory() / "AlienLanderAppOutput.png", copyWindowSurface() );
-     }
-     */
     gl::popModelView();
 
-    gl::draw( mStatusTexture, Vec2f( 10, 10 ) );
+    gl::lineWidth(4);
+    Vec2f pos = Vec2f(2, 2);
+    boost::format formatter("%+05f");
+    mDisplay.mOn = blue;
+    mDisplay.mOff = Color8u::hex(0x1A3E5A);
+    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mAcc).str() + "m/s/s", pos, 1).y;
+    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mVel).str() + "m/s  ", pos, 1).y;
+    pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mRatio).str() + "km   ", pos, 1).y;
 
+    // Reset the acceleration for the next pass
+    mAcc = 0;
 }
 
 CINDER_APP_NATIVE( AlienLanderApp, RendererGl )
