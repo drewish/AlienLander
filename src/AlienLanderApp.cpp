@@ -10,7 +10,6 @@ TODO list:
 */
 #include "cinder/app/AppNative.h"
 #include "cinder/Camera.h"
-#include "cinder/gl/gl.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/Perlin.h"
 #include "cinder/Text.h"
@@ -18,6 +17,7 @@ TODO list:
 #include <boost/format.hpp>
 #include "Resources.h"
 #include "SegmentDisplay.h"
+#include "Ship.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -31,23 +31,18 @@ public:
     void mouseMove( MouseEvent event );
     void touchesMoved( TouchEvent event );
     void keyDown( KeyEvent event );
+    void keyUp( KeyEvent event );
     void update();
     void draw();
 
     Vec2f mDelta1, mDelta2;
 
-    CameraOrtho mCam;
     int mPoints = 32;
     int mLines = 42;
     int mMargin = 20;
-    float mX = 0;
-    float mY = 0;
 
-    // Only for vertical:
-    float mAcc = 0;
-    float mVel = 0;
+    Ship mShip;
 
-    float mRatio = 0.5;
     Perlin mPerlin = Perlin(16);
     Channel32f mMap = Channel32f(1024, 1024);
     SegmentDisplay mDisplay;
@@ -76,6 +71,8 @@ void AlienLanderApp::setup()
             }
         }
     };
+
+    mShip.setup();
 }
 
 void AlienLanderApp::resize()
@@ -85,9 +82,6 @@ void AlienLanderApp::resize()
     mMargin = 15;
     mPoints = (width - (2 * mMargin)) / mMargin;
     mLines = (height - (2 * mMargin)) / mMargin;
-
-//    mCam.setOrtho( 0, width, height, 0, -990, 990 );
-//    gl::setMatrices( mCam );
 }
 
 void AlienLanderApp::mouseMove( MouseEvent event )
@@ -103,71 +97,78 @@ void AlienLanderApp::touchesMoved( TouchEvent event )
         mDelta1 = touches[0].getPrevPos() - touches[0].getPos();
         mDelta2 = touches[1].getPrevPos() - touches[1].getPos();
 
-        mX += (mDelta1.x + mDelta2.x) / 8;
-        mY += (mDelta1.y + mDelta2.y) / 8;
+        mShip.mPos.x += (mDelta1.x + mDelta2.x) / 8;
+        mShip.mPos.y += (mDelta1.y + mDelta2.y) / 8;
     }
 }
 
 void AlienLanderApp::keyDown( KeyEvent event )
 {
-    float offset = 1;
+    float offset = 0.0001;
     switch( event.getCode() ) {
         case KeyEvent::KEY_ESCAPE:
             quit();
             break;
         case KeyEvent::KEY_SPACE:
-            mAcc += 0.00008;
+            mShip.mMainMotor = 0.00008;
             break;
         case KeyEvent::KEY_DOWN:
-            mY += offset;
+            mShip.mThrusters.y = +offset;
             break;
         case KeyEvent::KEY_UP:
-            mY -= offset;
+            mShip.mThrusters.y = -offset;
             break;
         case KeyEvent::KEY_LEFT:
-            mX -= offset;
+            mShip.mThrusters.x = -offset;
             break;
         case KeyEvent::KEY_RIGHT:
-            mX += offset;
+            mShip.mThrusters.x = +offset;
+            break;
+    }
+}
+
+void AlienLanderApp::keyUp( KeyEvent event )
+{
+    switch( event.getCode() ) {
+        case KeyEvent::KEY_SPACE:
+            mShip.mMainMotor = 0;
+            break;
+        case KeyEvent::KEY_DOWN:
+            mShip.mThrusters.y = 0;
+            break;
+        case KeyEvent::KEY_UP:
+            mShip.mThrusters.y = 0;
+            break;
+        case KeyEvent::KEY_LEFT:
+            mShip.mThrusters.x = 0;
+            break;
+        case KeyEvent::KEY_RIGHT:
+            mShip.mThrusters.x = 0;
             break;
     }
 }
 
 void AlienLanderApp::update()
 {
-    mAcc += -0.00001; // gravity
-    mVel += mAcc;
-    mRatio += mVel;
-    mRatio = math<float>::clamp(mRatio, 0, 1);
-
-    // Consider this landed...
-    if (mRatio <= 0) mVel = 0;
-
-    // HACKY: Render some display info. Better to do these as vectors.
-    TextLayout simple;
-    simple.setFont( Font( "Arial", 24 ) );
-    simple.setColor( Color::white() );
-    simple.addLine( string("Acc: ") + to_string(mAcc) );
-    simple.addLine( string("Vel: ") + to_string(mVel) );
-    simple.addLine( "Alt: " + to_string(mRatio) );
+    mShip.update();
 }
 
 void AlienLanderApp::draw()
 {
-
     Color8u blue = Color8u(66, 161, 235);
-    Color8u red = Color8u(205, 138, 55);
+    Color8u darkBlue = Color8u::hex(0x1A3E5A);
 
     gl::clear( Color::gray(0.1) );
 
     gl::pushModelView();
 
-    gl::translate(mMargin, (1.0 - mRatio) * getWindowHeight() / 2);
-    gl::rotate(Vec3f((1.0 - mRatio) * 90,0,0));
+    gl::translate(mMargin, (mShip.cameraRotation()) * getWindowHeight() / 2);
+    gl::rotate(Vec3f(mShip.cameraRotation() * 90,0,0));
 
     float xScale = (getWindowWidth() - (1.0 * mMargin)) / mPoints;
     float yScale = (getWindowHeight() - (6.0 * mMargin)) / mLines;
-    Channel32f::Iter iter = mMap.getIter(Area((int)mX, (int)mY, (int)mX + mPoints, (int)mY + mLines));
+    Vec3f shipPos = mShip.mPos;
+    Channel32f::Iter iter = mMap.getIter(Area((int)shipPos.x, (int)shipPos.y, (int)shipPos.x + mPoints, (int)shipPos.y + mLines));
     while( iter.line() ) {
         PolyLine<Vec2f> line;
         Shape2d mask;
@@ -175,20 +176,20 @@ void AlienLanderApp::draw()
 
         gl::pushModelView();
 
-        gl::translate(0, (iter.y() - mY) * yScale, 0);
-        gl::rotate(Vec3f((1.0 - mRatio) * -90,0,0));
+        gl::translate(0, (iter.y() - shipPos.y) * yScale, 0);
+        gl::rotate(Vec3f(mShip.cameraRotation() * -90,0,0));
 
-        point = Vec2f((iter.x() - mX) * xScale, 0);
+        point = Vec2f((iter.x() - shipPos.x) * xScale, 0);
         mask.moveTo(point);
 
         while( iter.pixel() ) {
             float val = 200 * pow(1 * iter.v(), 2);
-            point = Vec2f((iter.x() - mX) * xScale, -val);
+            point = Vec2f((iter.x() - shipPos.x) * xScale, -val);
             mask.lineTo( point );
             line.push_back( point );
         }
 
-        point = Vec2f((iter.x() - mX) * xScale, 0);
+        point = Vec2f((iter.x() - shipPos.x) * xScale, 0);
         mask.lineTo(point);
         mask.close();
 
@@ -209,13 +210,10 @@ void AlienLanderApp::draw()
     Vec2f pos = Vec2f(2, 2);
     boost::format formatter("%+05f");
     mDisplay.mOn = blue;
-    mDisplay.mOff = Color8u::hex(0x1A3E5A);
-    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mAcc).str() + "m/s/s", pos, 1).y;
-    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mVel).str() + "m/s  ", pos, 1).y;
-    pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mRatio).str() + "km   ", pos, 1).y;
-
-    // Reset the acceleration for the next pass
-    mAcc = 0;
+    mDisplay.mOff = darkBlue;
+    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mShip.mAcc).str() + "m/s/s", pos, 1).y;
+    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mShip.mVel).str() + "m/s  ", pos, 1).y;
+    pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mShip.mPos.z).str() + "km   ", pos, 1).y;
 }
 
 CINDER_APP_NATIVE( AlienLanderApp, RendererGl )
