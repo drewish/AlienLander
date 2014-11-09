@@ -10,12 +10,9 @@ TODO list:
 */
 #include "cinder/app/AppNative.h"
 #include "cinder/Camera.h"
-#include "cinder/gl/Texture.h"
-#include "cinder/Perlin.h"
-#include "cinder/Text.h"
 #include "cinder/Utilities.h"
 #include <boost/format.hpp>
-#include "Resources.h"
+#include "Map.h"
 #include "SegmentDisplay.h"
 #include "Ship.h"
 
@@ -42,9 +39,7 @@ public:
     int mMargin = 20;
 
     Ship mShip;
-
-    Perlin mPerlin = Perlin(16);
-    Channel32f mMap = Channel32f(1024, 1024);
+    Map mMap;
     SegmentDisplay mDisplay;
 };
 
@@ -57,21 +52,7 @@ void AlienLanderApp::prepareSettings( Settings *settings )
 
 void AlienLanderApp::setup()
 {
-    try {
-        mMap = Channel32f(loadImage(loadResource(RES_MAP)));
-    }
-    catch( ... ) {
-        console() << "unable to load the texture file!" << std::endl;
-        // fall back to perlin noise
-        Channel32f::Iter iter = mMap.getIter();
-        while( iter.line() ) {
-            while( iter.pixel() ) {
-                float noise = (0.5 + mPerlin.fBm(iter.x() * 0.1, iter.y() * 0.1, 0.52));
-                iter.v() = noise;
-            }
-        }
-    };
-
+    mMap.setup(loadResource(RES_MAP));
     mShip.setup();
 }
 
@@ -168,7 +149,7 @@ void AlienLanderApp::draw()
     float xScale = (getWindowWidth() - (1.0 * mMargin)) / mPoints;
     float yScale = (getWindowHeight() - (6.0 * mMargin)) / mLines;
     Vec3f shipPos = mShip.mPos;
-    Channel32f::Iter iter = mMap.getIter(Area((int)shipPos.x, (int)shipPos.y, (int)shipPos.x + mPoints, (int)shipPos.y + mLines));
+    Channel32f::Iter iter = mMap.mChannel.getIter(Area((int)shipPos.x, (int)shipPos.y, (int)shipPos.x + mPoints, (int)shipPos.y + mLines));
     while( iter.line() ) {
         PolyLine<Vec2f> line;
         Shape2d mask;

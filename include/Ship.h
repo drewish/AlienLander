@@ -9,8 +9,6 @@
 #ifndef __AlienLander__Ship__
 #define __AlienLander__Ship__
 
-#include <stdio.h>
-
 using namespace ci;
 using namespace std;
 
