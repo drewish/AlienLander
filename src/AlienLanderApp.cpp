@@ -1,7 +1,8 @@
 /*
 TODO list:
 - Fix rotation so you land at spot that's in the middle of the board at max 
-  altitude.
+  altitude. Be good to put the lines into the field of view instead of hidden 
+  behind you as you lower.
 - Write code for drawing numbers
 - Display height over ground
 - Detect landing/collision

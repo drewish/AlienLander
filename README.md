@@ -5,3 +5,7 @@ I’ve been playing around trying to replicate the amazing computer graphics [Al
 ![Screenshot](PREVIEW.png)
 
 Right now it just lets you fly across a low resolution [height map of the United States](http://bit-player.org/2009/long-division).
+
+Credits:
+- [16-segment font](http://www.msarnoff.org/alpha32/)
+- [Map of US](http://bit-player.org/2009/long-division)
