@@ -13,7 +13,6 @@
 #include "Resources.h"
 
 using namespace ci;
-using namespace std;
 
 class Map {
 public:

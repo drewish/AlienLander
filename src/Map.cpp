@@ -7,14 +7,18 @@
 //
 
 #include "Map.h"
+#include "cinder/app/AppNative.h"
 
+using namespace ci::app;
+
+//
 void Map::setup(DataSourceRef img)
 {
     try {
         mChannel = Channel32f(loadImage(img));
     }
     catch( ... ) {
-//        console() << "unable to load the texture file!" << std::endl;
+        console() << "unable to load the texture file!" << std::endl;
         // fall back to perlin noise
         Channel32f::Iter iter = mChannel.getIter();
         while( iter.line() ) {

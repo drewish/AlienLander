@@ -14,6 +14,9 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 526114993F034EFEAD0FF5B3 /* CinderApp.icns */; };
 		498566431A0C917B00A76295 /* SegmentDisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 498566421A0C917B00A76295 /* SegmentDisplay.cpp */; };
+		49BFFD9F1A08A24E009085F3 /* usa-full.png in Resources */ = {isa = PBXBuildFile; fileRef = 49BFFD9E1A08A24E009085F3 /* usa-full.png */; };
+		49BFFDA21A08A727009085F3 /* moon-big.png in Resources */ = {isa = PBXBuildFile; fileRef = 49BFFDA01A08A727009085F3 /* moon-big.png */; };
+		49BFFDA31A08A727009085F3 /* moon.png in Resources */ = {isa = PBXBuildFile; fileRef = 49BFFDA11A08A727009085F3 /* moon.png */; };
 		49C8F2821A0DD15100AE0DF4 /* Ship.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C8F2801A0DD15100AE0DF4 /* Ship.cpp */; };
 		49C8F2861A0DDBB000AE0DF4 /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C8F2841A0DDBB000AE0DF4 /* Map.cpp */; };
 		49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */ = {isa = PBXBuildFile; fileRef = 49FBDEF31A03FB5F0019CAB2 /* usa.png */; };
@@ -35,6 +38,9 @@
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		498566411A0C917100A76295 /* SegmentDisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SegmentDisplay.h; path = ../include/SegmentDisplay.h; sourceTree = "<group>"; };
 		498566421A0C917B00A76295 /* SegmentDisplay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SegmentDisplay.cpp; path = ../src/SegmentDisplay.cpp; sourceTree = "<group>"; };
+		49BFFD9E1A08A24E009085F3 /* usa-full.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "usa-full.png"; path = "../resources/usa-full.png"; sourceTree = "<group>"; };
+		49BFFDA01A08A727009085F3 /* moon-big.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "moon-big.png"; path = "../resources/moon-big.png"; sourceTree = "<group>"; };
+		49BFFDA11A08A727009085F3 /* moon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = moon.png; path = ../resources/moon.png; sourceTree = "<group>"; };
 		49C8F2801A0DD15100AE0DF4 /* Ship.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Ship.cpp; path = ../src/Ship.cpp; sourceTree = "<group>"; };
 		49C8F2831A0DD1A500AE0DF4 /* Ship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Ship.h; path = ../include/Ship.h; sourceTree = "<group>"; };
 		49C8F2841A0DDBB000AE0DF4 /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Map.cpp; path = ../src/Map.cpp; sourceTree = "<group>"; };
@@ -147,6 +153,9 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				49BFFDA01A08A727009085F3 /* moon-big.png */,
+				49BFFDA11A08A727009085F3 /* moon.png */,
+				49BFFD9E1A08A24E009085F3 /* usa-full.png */,
 				49FBDEF31A03FB5F0019CAB2 /* usa.png */,
 				526114993F034EFEAD0FF5B3 /* CinderApp.icns */,
 				6CA7596354C54D97914CCD89 /* Info.plist */,
@@ -217,7 +226,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */,
+				49BFFDA31A08A727009085F3 /* moon.png in Resources */,
+				49BFFD9F1A08A24E009085F3 /* usa-full.png in Resources */,
 				49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */,
+				49BFFDA21A08A727009085F3 /* moon-big.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

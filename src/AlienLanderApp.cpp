@@ -3,10 +3,8 @@ TODO list:
 - Fix rotation so you land at spot that's in the middle of the board at max 
   altitude. Be good to put the lines into the field of view instead of hidden 
   behind you as you lower.
-- Write code for drawing numbers
 - Display height over ground
 - Detect landing/collision
-- Use thrusters for horizontal movement
 - Add concept of fuel
 */
 #include "cinder/app/AppNative.h"
@@ -53,7 +51,7 @@ void AlienLanderApp::prepareSettings( Settings *settings )
 
 void AlienLanderApp::setup()
 {
-    mMap.setup(loadResource(RES_MAP));
+    mMap.setup(loadResource(RES_US_BIG));
     mShip.setup();
 }
 
