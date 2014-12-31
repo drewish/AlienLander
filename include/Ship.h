@@ -18,10 +18,10 @@ public:
     void update();
     float cameraRotation();
 
-    Vec3f mThrusters = Vec3f::zero();
-    Vec3f mAcc = Vec3f::zero();
-    Vec3f mVel = Vec3f::zero();
-    Vec3f mPos = Vec3f(10, 10, 0.5);
+    Vec4f mThrusters = Vec4f::zero();
+    Vec4f mAcc = Vec4f::zero();
+    Vec4f mVel = Vec4f::zero();
+    Vec4f mPos = Vec4f(0.5, 0.5, 1, 0.0);
 
     float mFuel = 1000;
 
