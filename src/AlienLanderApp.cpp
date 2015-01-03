@@ -24,6 +24,7 @@ class AlienLanderApp : public AppNative {
 public:
     void prepareSettings( Settings *settings ) override;
     void setup();
+    void buildMeshes();
     void resize();
     void mouseMove( MouseEvent event );
     void touchesMoved( TouchEvent event );
@@ -32,11 +33,11 @@ public:
     void update();
     void draw();
 
+
     Vec2f mDelta1, mDelta2;
 
-    int mPoints = 21;
-    int mLines = 20;
-//    int mMargin = 20;
+    int mPoints = 5;
+    int mLines = 2;
 
     Ship mShip;
 //    Map mMap;
@@ -80,8 +81,16 @@ void AlienLanderApp::setup()
         std::cout << "Unable to load shader" << std::endl;
     }
 
-    int totalVertices = mPoints * mLines; // TODO
-    int totalIndicies = mPoints * mLines; // TODO
+    buildMeshes();
+
+    mShip.setup();
+//    setFullScreen( true );
+}
+
+void AlienLanderApp::buildMeshes()
+{
+    int totalVertices = mPoints * mLines;
+    int totalIndicies = mPoints * mLines;
     gl::VboMesh::Layout layout;
     layout.setStaticIndices();
     layout.setStaticPositions();
@@ -103,11 +112,10 @@ void AlienLanderApp::setup()
     mLineMesh->bufferPositions( vertCoords );
     mLineMesh->bufferTexCoords2d( 0, texCoords );
 
+    // * * *
 
-
-
-    totalVertices = mLines * (mPoints + 1) * 2; // TODO
-    totalIndicies = mLines * (mPoints - 1) * 4; //TODO: check math
+    totalVertices = mLines * mPoints * 2;
+    totalIndicies = mLines * mPoints * 2;
     gl::VboMesh::Layout maskLayout;
     maskLayout.setStaticIndices();
     maskLayout.setStaticPositions();
@@ -121,11 +129,15 @@ void AlienLanderApp::setup()
     for( int z = 0; z < mLines; ++z ) {
         for( int x = 0; x < mPoints; ++x ) {
             Vec3f vert = Vec3f( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5);
+            Vec2f coord = Vec2f( x / (float)mPoints, z / (float)mLines );
+
             vertCoords.push_back(vert);
-            vert.y = -0.1;
+            vert.y = -0.2; // the vertex shader just offsets so if we move it
+                           // down it'll just skew the strip.
             vertCoords.push_back(vert);
-            texCoords.push_back( Vec2f( x / (float)mPoints, z / (float)mLines ) );
-            texCoords.push_back( Vec2f( x / (float)mPoints, z / (float)mLines ) );
+
+            texCoords.push_back( coord );
+            texCoords.push_back( coord );
         }
         for( int x = 1; x <= mPoints * 2; x += 2 ) {
             indices.push_back( z * 2 * mPoints + x - 1 );
@@ -136,20 +148,16 @@ void AlienLanderApp::setup()
     mMaskMesh->bufferIndices( indices );
     mMaskMesh->bufferPositions( vertCoords );
     mMaskMesh->bufferTexCoords2d( 0, texCoords );
-
-
-
-    mShip.setup();
-//    setFullScreen( true );
 }
 
 void AlienLanderApp::resize()
 {
-//    int height = getWindowHeight();
-//    int width = getWindowWidth();
-//    mMargin = 10;
-//    mPoints = (width - (2 * mMargin)) / mMargin;
-//    mLines = (height - (2 * mMargin)) / mMargin;
+    int height = getWindowHeight();
+    int width = getWindowWidth();
+    int margin = 10;
+    mPoints = (width - (2 * margin)) / margin;
+    mLines = (height - (2 * margin)) / margin;
+    buildMeshes();
 }
 
 void AlienLanderApp::update()

@@ -24,8 +24,8 @@ void Ship::update()
     mAcc += mThrusters;
 
     // FIXME:
-    Vec3f drag = (mVel.xyz() * -1) * mVel.xyz().lengthSquared() * 5;
-    float rotDrag = mVel.w * -1 * (mVel.w * mVel.w) * 50;
+    Vec3f drag = (mVel.xyz() * -1) * mVel.xyz().lengthSquared() * 500;
+    float rotDrag = mVel.w * -1 * (mVel.w * mVel.w) * 500;
     mAcc += Vec4f(drag, rotDrag);
 
     mVel += mAcc;
@@ -34,7 +34,7 @@ void Ship::update()
     // Consider this landed...
 //    mPos.z = math<float>::clamp(mPos.z, 0, 1);
     if (mPos.z <= 0) {
-        mVel = Vec3f::zero();
+        mVel = Vec4f::zero();
         mPos.z = 0;
     }
 }
