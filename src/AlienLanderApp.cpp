@@ -1,15 +1,9 @@
 /*
 TODO list:
- -
- - restore hidden line removal
- - pass color through to frag shader
- - Display height over ground
- - Fix rotation so you land at spot that's in the middle of the board at max
-   altitude. Be good to put the lines into the field of view instead of hidden
-   behind you as you lower.
  - Detect landing/collision
+ - Compute/Display height over ground
+ - Use touch for scaling/rotation/panning
  - Add concept of fuel
- - Use 2 fingers to adjust thrusters
 */
 #include "cinder/app/AppNative.h"
 #include "cinder/Camera.h"
@@ -40,16 +34,17 @@ public:
 
     Vec2f mDelta1, mDelta2;
 
-    int mPoints = 32;
-    int mLines = 42;
-    int mMargin = 20;
+    int mPoints = 21;
+    int mLines = 20;
+//    int mMargin = 20;
 
     Ship mShip;
 //    Map mMap;
     SegmentDisplay mDisplay;
 
 
-    gl::VboMeshRef	mVboMesh;
+    gl::VboMeshRef	mMaskMesh;
+    gl::VboMeshRef	mLineMesh;
     gl::TextureRef	mTexture;
     gl::GlslProgRef	mShader;
     CameraPersp     mCamera;
@@ -66,70 +61,182 @@ void AlienLanderApp::prepareSettings( Settings *settings )
 
 void AlienLanderApp::setup()
 {
-  try {
-    mTexture = gl::Texture::create( loadImage( loadResource( RES_US_SQUARE ) ) );
-  }
-  catch( ... ) {
-    std::cout << "unable to load the texture file!" << std::endl;
-  }
-  mTexture->setWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
-
-  try {
-    mShader = gl::GlslProg::create( loadResource( RES_VERT ), loadResource( RES_FRAG ) );
-  }
-  catch( gl::GlslProgCompileExc &exc ) {
-    std::cout << "Shader compile error: " << std::endl;
-    std::cout << exc.what();
-  }
-  catch( ... ) {
-    std::cout << "Unable to load shader" << std::endl;
-  }
-
-  int totalVertices = mLines * mPoints;
-  int totalLines = (mLines - 1) * mPoints;
-  gl::VboMesh::Layout layout;
-  layout.setStaticIndices();
-  layout.setStaticPositions();
-  layout.setStaticTexCoords2d();
-  mVboMesh = gl::VboMesh::create( totalVertices, totalLines * 2, layout, GL_LINES );
-
-  vector<uint32_t> indices;
-  vector<Vec3f> vertCoords;
-  vector<Vec2f> texCoords;
-  for( int z = 0; z < mPoints; ++z ) {
-    for( int x = 1; x < mLines; ++x ) {
-      indices.push_back( z * mLines + (x - 1) );
-      indices.push_back( z * mLines + (x + 0) );
+    try {
+        mTexture = gl::Texture::create( loadImage( loadResource( RES_US_SQUARE ) ) );
     }
-    for( int x = 0; x < mLines; ++x ) {
-      vertCoords.push_back( Vec3f( x / (float)mLines - 0.5, 0.0, z / (float)mPoints - 0.5) );
-      texCoords.push_back( Vec2f( x / (float)mLines, z / (float)mPoints ) );
+    catch( ... ) {
+        std::cout << "unable to load the texture file!" << std::endl;
     }
-  }
+    mTexture->setWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
-  mVboMesh->bufferIndices( indices );
-  mVboMesh->bufferPositions( vertCoords );
-  mVboMesh->bufferTexCoords2d( 0, texCoords );
+    try {
+        mShader = gl::GlslProg::create( loadResource( RES_VERT ), loadResource( RES_FRAG ) );
+    }
+    catch( gl::GlslProgCompileExc &exc ) {
+        std::cout << "Shader compile error: " << std::endl;
+        std::cout << exc.what();
+    }
+    catch( ... ) {
+        std::cout << "Unable to load shader" << std::endl;
+    }
 
-  mCamera.lookAt( Vec3f( 0.0f, 30.0f, 20.0f ), Vec3f(0.0,-5.0,0.0), Vec3f::yAxis() );
+    int totalVertices = mPoints * mLines; // TODO
+    int totalIndicies = mPoints * mLines; // TODO
+    gl::VboMesh::Layout layout;
+    layout.setStaticIndices();
+    layout.setStaticPositions();
+    layout.setStaticTexCoords2d();
+    mLineMesh = gl::VboMesh::create( totalVertices, totalIndicies, layout, GL_LINE_STRIP );
+
+    vector<uint32_t> indices;
+    vector<Vec3f> vertCoords;
+    vector<Vec2f> texCoords;
+    for( int z = 0; z < mLines; ++z ) {
+        for( int x = 0; x < mPoints; ++x ) {
+            vertCoords.push_back( Vec3f( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5) );
+            texCoords.push_back( Vec2f( x / (float)mPoints, z / (float)mLines ) );
+            indices.push_back( z * mPoints + (x + 0) );
+        }
+    }
+
+    mLineMesh->bufferIndices( indices );
+    mLineMesh->bufferPositions( vertCoords );
+    mLineMesh->bufferTexCoords2d( 0, texCoords );
+
+
+
+
+    totalVertices = mLines * (mPoints + 1) * 2; // TODO
+    totalIndicies = mLines * (mPoints - 1) * 4; //TODO: check math
+    gl::VboMesh::Layout maskLayout;
+    maskLayout.setStaticIndices();
+    maskLayout.setStaticPositions();
+    maskLayout.setStaticTexCoords2d();
+    mMaskMesh = gl::VboMesh::create( totalVertices, totalIndicies, maskLayout, GL_QUAD_STRIP );
+
+    indices.clear();
+    vertCoords.clear();
+    texCoords.clear();
+
+    for( int z = 0; z < mLines; ++z ) {
+        for( int x = 0; x < mPoints; ++x ) {
+            Vec3f vert = Vec3f( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5);
+            vertCoords.push_back(vert);
+            vert.y = -0.1;
+            vertCoords.push_back(vert);
+            texCoords.push_back( Vec2f( x / (float)mPoints, z / (float)mLines ) );
+            texCoords.push_back( Vec2f( x / (float)mPoints, z / (float)mLines ) );
+        }
+        for( int x = 1; x <= mPoints * 2; x += 2 ) {
+            indices.push_back( z * 2 * mPoints + x - 1 );
+            indices.push_back( z * 2 * mPoints + x - 0 );
+        }
+    }
+
+    mMaskMesh->bufferIndices( indices );
+    mMaskMesh->bufferPositions( vertCoords );
+    mMaskMesh->bufferTexCoords2d( 0, texCoords );
+
+
 
     mShip.setup();
-    setFullScreen( true );
+//    setFullScreen( true );
 }
 
 void AlienLanderApp::resize()
 {
-    int height = getWindowHeight();
-    int width = getWindowWidth();
-    mMargin = 10;
-    mPoints = (width - (2 * mMargin)) / mMargin;
-    mLines = (height - (2 * mMargin)) / mMargin;
+//    int height = getWindowHeight();
+//    int width = getWindowWidth();
+//    mMargin = 10;
+//    mPoints = (width - (2 * mMargin)) / mMargin;
+//    mLines = (height - (2 * mMargin)) / mMargin;
 }
+
+void AlienLanderApp::update()
+{
+    mShip.update();
+
+    // TODO: Need to change the focus point to remain parallel as we descend
+    mCamera.lookAt( Vec3f( 0.0f, 30.0f * mShip.mPos.z, 20.0f ), Vec3f(0.0,0.0,0.0), Vec3f::yAxis() );
+
+    Matrix44f center = Matrix44f(1, 0, 0, +0.5,
+                                 0, 1, 0, +0.5,
+                                 0, 0, 1, 0,
+                                 0, 0, 0, 1);
+    Matrix44f goback = Matrix44f(1, 0, 0, -0.5,
+                                 0, 1, 0, -0.5,
+                                 0, 0, 1, 0,
+                                 0, 0, 0, 1);
+    Matrix44f r = Matrix44f::createRotation(Vec3f::zAxis(), mShip.mPos.w);
+    Matrix44f s = Matrix44f::createScale(mZoom);
+    Matrix44f t = Matrix44f(1, 0, 0, mShip.mPos.x,
+                            0, 1, 0, mShip.mPos.y,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1);
+
+    mTexTransform = goback * r * t * s * center;
+}
+
+void AlienLanderApp::draw()
+{
+    gl::pushMatrices();
+
+    Color8u black = Color::gray(0.3);
+    Color8u blue = Color8u(66, 161, 235);
+    Color8u darkBlue = Color8u::hex(0x1A3E5A);
+
+    gl::clear( black ); // Color::black()
+
+
+    gl::lineWidth(2);
+    Vec2f pos = Vec2f(2, 2);
+    boost::format formatter("%+05f");
+    mDisplay.mOn = blue;
+    mDisplay.mOff = darkBlue;
+    pos.y += 2 + mDisplay.drawString("Pos " + (formatter % mShip.mPos).str(), pos, 1.0).y;
+    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mShip.mAcc).str(), pos, 1.0).y;
+    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mShip.mVel).str(), pos, 1.0).y;
+//  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mShip.mPos.z).str() + "km   ", pos, 0.75).y;
+//  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % (mShip.mPos.z - mMap.valueAt((int)shipPos.x, (int)shipPos.y))).str() + "km   ", pos, 0.75).y;
+
+    gl::setMatrices( mCamera );
+
+    gl::lineWidth(1);
+
+    Vec2f vec = Vec2f(cos(mShip.mPos.w), sin(mShip.mPos.w)) * 10;
+    gl::drawVector(Vec3f(0.0,5.0,0.0), Vec3f(vec.x, 5.0, vec.y));
+
+    gl::scale(2* Vec3f( 10, 10, 10 ) );
+
+
+    mTexture->enableAndBind();
+    mShader->bind();
+    mShader->uniform( "tex0", 0 );
+    mShader->uniform( "texTransform", mTexTransform );
+    mShader->uniform( "zoom", mZoom );
+
+    int indiciesInLine = mPoints;
+    int indiciesInMask = mPoints * 2;
+    for (int i = 0; i < mLines; ++i) {
+        gl::color( black );
+//        gl::enableWireframe();
+        gl::drawRange( mMaskMesh, i * indiciesInMask, indiciesInMask);
+//        gl::disableWireframe();
+        gl::color( blue );
+        gl::drawRange( mLineMesh, i * indiciesInLine, indiciesInLine);
+    }
+
+    mShader->unbind();
+    mTexture->unbind();
+
+    gl::popMatrices();
+}
+
 
 void AlienLanderApp::mouseMove( MouseEvent event )
 {
-//    int height = getWindowHeight();
-//    mRatio = 1 - (math<float>::clamp(event.getY(), 0, height) / height);
+    //    int height = getWindowHeight();
+    //    mRatio = 1 - (math<float>::clamp(event.getY(), 0, height) / height);
 }
 
 void AlienLanderApp::touchesMoved( TouchEvent event )
@@ -162,19 +269,19 @@ void AlienLanderApp::keyDown( KeyEvent event )
         case KeyEvent::KEY_UP:
             mShip.mThrusters.y = -lateralThrust;
             break;
-//        case KeyEvent::KEY_LEFT:
-//            mShip.mThrusters.x = -offset;
-//            break;
-//        case KeyEvent::KEY_RIGHT:
-//            mShip.mThrusters.x = +offset;
-//            break;
+            //        case KeyEvent::KEY_LEFT:
+            //            mShip.mThrusters.x = -offset;
+            //            break;
+            //        case KeyEvent::KEY_RIGHT:
+            //            mShip.mThrusters.x = +offset;
+            //            break;
 
-//        case KeyEvent::KEY_DOWN:
-//            mShip.mPos += Vec3f(vec, 0);
-//            break;
-//        case KeyEvent::KEY_UP:
-//            mShip.mPos -= Vec3f(vec, 0);
-//            break;
+            //        case KeyEvent::KEY_DOWN:
+            //            mShip.mPos += Vec3f(vec, 0);
+            //            break;
+            //        case KeyEvent::KEY_UP:
+            //            mShip.mPos -= Vec3f(vec, 0);
+            //            break;
         case app::KeyEvent::KEY_LEFT:
             mShip.mThrusters.w = rotationThrust;
             break;
@@ -196,12 +303,12 @@ void AlienLanderApp::keyUp( KeyEvent event )
         case KeyEvent::KEY_UP:
             mShip.mThrusters.y = 0.0;
             break;
-//        case KeyEvent::KEY_LEFT:
-//            mShip.mThrusters.x = 0;
-//            break;
-//        case KeyEvent::KEY_RIGHT:
-//            mShip.mThrusters.x = 0;
-//            break;
+            //        case KeyEvent::KEY_LEFT:
+            //            mShip.mThrusters.x = 0;
+            //            break;
+            //        case KeyEvent::KEY_RIGHT:
+            //            mShip.mThrusters.x = 0;
+            //            break;
         case KeyEvent::KEY_LEFT:
             mShip.mThrusters.w = 0.0;
             break;
@@ -211,113 +318,5 @@ void AlienLanderApp::keyUp( KeyEvent event )
     }
 }
 
-void AlienLanderApp::update()
-{
-    mShip.update();
-
-    Matrix44f center = Matrix44f(1, 0, 0, +0.5,
-                                 0, 1, 0, +0.5,
-                                 0, 0, 1, 0,
-                                 0, 0, 0, 1);
-    Matrix44f goback = Matrix44f(1, 0, 0, -0.5,
-                                 0, 1, 0, -0.5,
-                                 0, 0, 1, 0,
-                                 0, 0, 0, 1);
-    Matrix44f r = Matrix44f::createRotation(Vec3f::zAxis(), mShip.mPos.w);
-    Matrix44f s = Matrix44f::createScale(mZoom);
-    Matrix44f t = Matrix44f(1, 0, 0, mShip.mPos.x,
-                            0, 1, 0, mShip.mPos.y,
-                            0, 0, 1, 0,
-                            0, 0, 0, 1);
-
-    mTexTransform = goback * r * t * s * center;
-}
-
-void AlienLanderApp::draw()
-{
-    gl::pushMatrices();
-
-    Color8u blue = Color8u(66, 161, 235);
-    Color8u darkBlue = Color8u::hex(0x1A3E5A);
-
-    gl::clear( Color::black() ); // Color::gray(0.1)
-
-
-    gl::lineWidth(2);
-    Vec2f pos = Vec2f(2, 2);
-    boost::format formatter("%+05f");
-    mDisplay.mOn = blue;
-    mDisplay.mOff = darkBlue;
-    pos.y += 2 + mDisplay.drawString("Pos " + (formatter % mShip.mPos).str(), pos, 1.0).y;
-    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mShip.mAcc).str(), pos, 1.0).y;
-    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mShip.mVel).str(), pos, 1.0).y;
-//  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mShip.mPos.z).str() + "km   ", pos, 0.75).y;
-//  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % (mShip.mPos.z - mMap.valueAt((int)shipPos.x, (int)shipPos.y))).str() + "km   ", pos, 0.75).y;
-
-    gl::setMatrices( mCamera );
-
-    gl::lineWidth(1);
-
-    Vec2f vec = Vec2f(cos(mShip.mPos.w), sin(mShip.mPos.w)) * 10;
-    gl::drawVector(Vec3f(0.0,5.0,0.0), Vec3f(vec.x, 5.0, vec.y));
-
-    mTexture->enableAndBind();
-    mShader->bind();
-    mShader->uniform( "tex0", 0 );
-    mShader->uniform( "texTransform", mTexTransform );
-    mShader->uniform( "zoom", mZoom );
-
-    gl::scale(2* Vec3f( 10, 10, 10 ) );
-    gl::draw( mVboMesh );
-
-    mShader->unbind();
-    mTexture->unbind();
-////    gl::translate(mMargin, (mShip.mPos.z) * getWindowHeight() / 2);
-////    gl::rotate(Vec3f(mShip.cameraRotation() * 90,0,0));
-//    gl::translate(0, 0, -scaleZ(mShip.mPos.z));
-//    gl::rotate(Vec3f(45,0,0));
-//
-//    float xScale = (getWindowWidth() - (1.0 * mMargin)) / mPoints;
-//    float yScale = (getWindowHeight() - (6.0 * mMargin)) / mLines;
-//    Vec3f shipPos = mShip.mPos;
-//    Channel32f::Iter iter = mMap.viewFrom(shipPos, Vec2i(mPoints, mLines));
-//    while( iter.line() ) {
-//        PolyLine<Vec2f> line;
-//        Shape2d mask;
-//        Vec2f point;
-//
-//        gl::pushModelView();
-//
-//        gl::translate(0, (iter.y() - shipPos.y) * yScale, 0);
-//        gl::rotate(Vec3f(-45,0,0));
-//
-//        point = Vec2f((iter.x() - shipPos.x) * xScale, 0);
-//        mask.moveTo(point);
-//
-//        while( iter.pixel() ) {
-//            float val = scaleZ(iter.v());
-//            point = Vec2f((iter.x() - shipPos.x) * xScale, -val);
-//            mask.lineTo( point );
-//            line.push_back( point );
-//        }
-//
-//        point = Vec2f((iter.x() - shipPos.x) * xScale, 0);
-//        mask.lineTo(point);
-//        mask.close();
-//
-//        gl::color( Color::black() );
-//        gl::drawSolid(mask);
-//
-//        gl::color(blue);
-//        gl::lineWidth(2);
-//        gl::draw(line);
-//
-//        gl::popModelView();
-//    }
-//
-
-
-    gl::popMatrices();
-}
 
 CINDER_APP_NATIVE( AlienLanderApp, RendererGl )

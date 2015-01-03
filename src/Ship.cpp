@@ -33,7 +33,10 @@ void Ship::update()
 
     // Consider this landed...
 //    mPos.z = math<float>::clamp(mPos.z, 0, 1);
-//    if (mPos.z <= 0) mVel = Vec3f::zero();
+    if (mPos.z <= 0) {
+        mVel = Vec3f::zero();
+        mPos.z = 0;
+    }
 }
 
 float Ship::cameraRotation()
