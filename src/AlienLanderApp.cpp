@@ -1,8 +1,11 @@
 /*
 TODO list:
+ - Fix low FPS
+ - Forward thruster should take heading into account
+ - optimize text display to use VBO
+ - Use touch for scaling/rotation/panning
  - Detect landing/collision
  - Compute/Display height over ground
- - Use touch for scaling/rotation/panning
  - Add concept of fuel
 */
 #include "cinder/app/AppNative.h"
@@ -84,7 +87,10 @@ void AlienLanderApp::setup()
     buildMeshes();
 
     mShip.setup();
+
 //    setFullScreen( true );
+    setFrameRate(60);
+//    gl::enableVerticalSync(true);
 }
 
 void AlienLanderApp::buildMeshes()
@@ -189,11 +195,11 @@ void AlienLanderApp::draw()
 {
     gl::pushMatrices();
 
-    Color8u black = Color::gray(0.3);
+    Color8u black = Color::black();
     Color8u blue = Color8u(66, 161, 235);
     Color8u darkBlue = Color8u::hex(0x1A3E5A);
 
-    gl::clear( black ); // Color::black()
+    gl::clear( black );
 
 
     gl::lineWidth(2);
@@ -201,18 +207,16 @@ void AlienLanderApp::draw()
     boost::format formatter("%+05f");
     mDisplay.mOn = blue;
     mDisplay.mOff = darkBlue;
-    pos.y += 2 + mDisplay.drawString("Pos " + (formatter % mShip.mPos).str(), pos, 1.0).y;
-    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mShip.mAcc).str(), pos, 1.0).y;
-    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mShip.mVel).str(), pos, 1.0).y;
+//    pos.y += 2 + mDisplay.drawString("Pos " + (formatter % mShip.mPos).str(), pos, 1.0).y;
+//    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mShip.mAcc).str(), pos, 1.0).y;
+//    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mShip.mVel).str(), pos, 1.0).y;
+//    mDisplay.drawString("FPS " + (formatter % getAverageFps()).str(), pos, 1.0).y;
 //  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mShip.mPos.z).str() + "km   ", pos, 0.75).y;
 //  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % (mShip.mPos.z - mMap.valueAt((int)shipPos.x, (int)shipPos.y))).str() + "km   ", pos, 0.75).y;
 
     gl::setMatrices( mCamera );
 
     gl::lineWidth(1);
-
-    Vec2f vec = Vec2f(cos(mShip.mPos.w), sin(mShip.mPos.w)) * 10;
-    gl::drawVector(Vec3f(0.0,5.0,0.0), Vec3f(vec.x, 5.0, vec.y));
 
     gl::scale(2* Vec3f( 10, 10, 10 ) );
 
@@ -226,16 +230,24 @@ void AlienLanderApp::draw()
     int indiciesInLine = mPoints;
     int indiciesInMask = mPoints * 2;
     for (int i = 0; i < mLines; ++i) {
-        gl::color( black );
+        gl::color( Color::gray(0.4) );
 //        gl::enableWireframe();
         gl::drawRange( mMaskMesh, i * indiciesInMask, indiciesInMask);
 //        gl::disableWireframe();
+        if (getAverageFps() > 30)
         gl::color( blue );
+        else gl::color(Color(1.0,0.0,0.0));
         gl::drawRange( mLineMesh, i * indiciesInLine, indiciesInLine);
     }
 
     mShader->unbind();
     mTexture->unbind();
+
+
+    gl::color( Color::gray(0.8) );
+    Vec2f vec = Vec2f(cos(mShip.mPos.w), sin(mShip.mPos.w)) * 2.0;
+    gl::drawVector(Vec3f(0.0,5.0,0.0), Vec3f(vec.x, 5.0, vec.y));
+
 
     gl::popMatrices();
 }
