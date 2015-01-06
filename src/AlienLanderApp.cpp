@@ -90,7 +90,7 @@ void AlienLanderApp::setup()
 
 //    setFullScreen( true );
     setFrameRate(60);
-//    gl::enableVerticalSync(true);
+    gl::enableVerticalSync(false);
 }
 
 void AlienLanderApp::buildMeshes()
@@ -126,7 +126,7 @@ void AlienLanderApp::buildMeshes()
     maskLayout.setStaticIndices();
     maskLayout.setStaticPositions();
     maskLayout.setStaticTexCoords2d();
-    mMaskMesh = gl::VboMesh::create( totalVertices, totalIndicies, maskLayout, GL_QUAD_STRIP );
+    mMaskMesh = gl::VboMesh::create( totalVertices, totalIndicies, maskLayout, GL_TRIANGLE_STRIP );
 
     indices.clear();
     vertCoords.clear();
@@ -138,8 +138,10 @@ void AlienLanderApp::buildMeshes()
             Vec2f coord = Vec2f( x / (float)mPoints, z / (float)mLines );
 
             vertCoords.push_back(vert);
-            vert.y = -0.2; // the vertex shader just offsets so if we move it
-                           // down it'll just skew the strip.
+            // the vertex shader just uses the texture value as an offset to
+            // the y value so setting one below the first value will create a
+            // skewed strip to mask the lines behind it.
+            vert.y = -0.15;
             vertCoords.push_back(vert);
 
             texCoords.push_back( coord );
@@ -193,24 +195,25 @@ void AlienLanderApp::update()
 
 void AlienLanderApp::draw()
 {
-    gl::pushMatrices();
-
     Color8u black = Color::black();
     Color8u blue = Color8u(66, 161, 235);
     Color8u darkBlue = Color8u::hex(0x1A3E5A);
 
-    gl::clear( black );
+    gl::pushMatrices();
 
+    gl::enableDepthRead( true );
+    gl::enableDepthWrite( true );
+    gl::clear( black, true );
 
     gl::lineWidth(2);
     Vec2f pos = Vec2f(2, 2);
     boost::format formatter("%+05f");
-    mDisplay.mOn = blue;
+    mDisplay.mOn = (getAverageFps() > 30) ? blue : Color8u(240,0,0);
     mDisplay.mOff = darkBlue;
 //    pos.y += 2 + mDisplay.drawString("Pos " + (formatter % mShip.mPos).str(), pos, 1.0).y;
 //    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mShip.mAcc).str(), pos, 1.0).y;
 //    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mShip.mVel).str(), pos, 1.0).y;
-//    mDisplay.drawString("FPS " + (formatter % getAverageFps()).str(), pos, 1.0).y;
+    mDisplay.drawString("FPS " + (formatter % getAverageFps()).str(), pos, 1.0).y;
 //  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mShip.mPos.z).str() + "km   ", pos, 0.75).y;
 //  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % (mShip.mPos.z - mMap.valueAt((int)shipPos.x, (int)shipPos.y))).str() + "km   ", pos, 0.75).y;
 
@@ -229,15 +232,15 @@ void AlienLanderApp::draw()
 
     int indiciesInLine = mPoints;
     int indiciesInMask = mPoints * 2;
-    for (int i = 0; i < mLines; ++i) {
-        gl::color( Color::gray(0.4) );
-//        gl::enableWireframe();
-        gl::drawRange( mMaskMesh, i * indiciesInMask, indiciesInMask);
-//        gl::disableWireframe();
-        if (getAverageFps() > 30)
+    // Draw front to back to allow the depth buffer to do its job.
+    for (int i = mLines - 1; i >= 0; --i) {
         gl::color( blue );
-        else gl::color(Color(1.0,0.0,0.0));
         gl::drawRange( mLineMesh, i * indiciesInLine, indiciesInLine);
+
+        gl::color( Color::gray(0.1) );
+        // gl::enableWireframe();
+        gl::drawRange( mMaskMesh, i * indiciesInMask, indiciesInMask);
+        // gl::disableWireframe();
     }
 
     mShader->unbind();
