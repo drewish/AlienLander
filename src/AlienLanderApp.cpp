@@ -1,12 +1,12 @@
 /*
 TODO list:
- - Fix low FPS
- - Forward thruster should take heading into account
+ - standardize on either Y or Z axis for heights
+ - fix point of rotation, should move towards closer edge as you descend
+ - get zoom scaling from view point rather than edge of texture
  - optimize text display to use VBO
  - Use touch for scaling/rotation/panning
  - Detect landing/collision
  - Compute/Display height over ground
- - Add concept of fuel
 */
 #include "cinder/app/AppNative.h"
 #include "cinder/Camera.h"
@@ -39,8 +39,8 @@ public:
 
     Vec2f mDelta1, mDelta2;
 
-    int mPoints = 5;
-    int mLines = 2;
+    int mPoints = 21;
+    int mLines = 40;
 
     Ship mShip;
 //    Map mMap;
@@ -88,9 +88,12 @@ void AlienLanderApp::setup()
 
     mShip.setup();
 
-//    setFullScreen( true );
+    setFullScreen( true );
     setFrameRate(60);
+
     gl::enableVerticalSync(false);
+
+    mCamera.setPerspective( 35.0f, 1.0f, 10.0f, 100.0f );
 }
 
 void AlienLanderApp::buildMeshes()
@@ -141,7 +144,7 @@ void AlienLanderApp::buildMeshes()
             // the vertex shader just uses the texture value as an offset to
             // the y value so setting one below the first value will create a
             // skewed strip to mask the lines behind it.
-            vert.y = -0.15;
+            vert.y = -0.5;
             vertCoords.push_back(vert);
 
             texCoords.push_back( coord );
@@ -162,15 +165,17 @@ void AlienLanderApp::resize()
 {
     int height = getWindowHeight();
     int width = getWindowWidth();
-    int margin = 10;
-    mPoints = (width - (2 * margin)) / margin;
-    mLines = (height - (2 * margin)) / margin;
+    int margin = 20;
+    mPoints = (width - (2 * margin)) / 10;
+    mLines = (height - (2 * margin)) / 25;
     buildMeshes();
 }
 
 void AlienLanderApp::update()
 {
     mShip.update();
+
+//    mZoom = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
 
     // TODO: Need to change the focus point to remain parallel as we descend
     mCamera.lookAt( Vec3f( 0.0f, 30.0f * mShip.mPos.z, 20.0f ), Vec3f(0.0,0.0,0.0), Vec3f::yAxis() );
@@ -264,6 +269,10 @@ void AlienLanderApp::mouseMove( MouseEvent event )
 
 void AlienLanderApp::touchesMoved( TouchEvent event )
 {
+    // TODO treat the two deltas as forces acting on a rigid body.
+    // Accelenration becomse translation
+    // Torque becomes rotation
+    // Compression/tension becomes zooming
     const vector<TouchEvent::Touch>&touches = event.getTouches();
     if (touches.size() == 2) {
         mDelta1 = touches[0].getPrevPos() - touches[0].getPos();
@@ -277,14 +286,14 @@ void AlienLanderApp::touchesMoved( TouchEvent event )
 void AlienLanderApp::keyDown( KeyEvent event )
 {
     float rotationThrust = 0.0001;
-    float lateralThrust = 0.0002;
+    float lateralThrust = 0.00001;
 
     switch( event.getCode() ) {
         case KeyEvent::KEY_ESCAPE:
             quit();
             break;
         case KeyEvent::KEY_SPACE:
-            mShip.mMainMotor = 0.00008;
+            mShip.mThrusters.z = 0.00008;
             break;
         case KeyEvent::KEY_DOWN:
             mShip.mThrusters.y = +lateralThrust;
@@ -292,19 +301,6 @@ void AlienLanderApp::keyDown( KeyEvent event )
         case KeyEvent::KEY_UP:
             mShip.mThrusters.y = -lateralThrust;
             break;
-            //        case KeyEvent::KEY_LEFT:
-            //            mShip.mThrusters.x = -offset;
-            //            break;
-            //        case KeyEvent::KEY_RIGHT:
-            //            mShip.mThrusters.x = +offset;
-            //            break;
-
-            //        case KeyEvent::KEY_DOWN:
-            //            mShip.mPos += Vec3f(vec, 0);
-            //            break;
-            //        case KeyEvent::KEY_UP:
-            //            mShip.mPos -= Vec3f(vec, 0);
-            //            break;
         case app::KeyEvent::KEY_LEFT:
             mShip.mThrusters.w = rotationThrust;
             break;
@@ -318,23 +314,13 @@ void AlienLanderApp::keyUp( KeyEvent event )
 {
     switch( event.getCode() ) {
         case KeyEvent::KEY_SPACE:
-            mShip.mMainMotor = 0;
+            mShip.mThrusters.z = 0;
             break;
         case KeyEvent::KEY_DOWN:
-            mShip.mThrusters.y = 0.0;
-            break;
         case KeyEvent::KEY_UP:
             mShip.mThrusters.y = 0.0;
             break;
-            //        case KeyEvent::KEY_LEFT:
-            //            mShip.mThrusters.x = 0;
-            //            break;
-            //        case KeyEvent::KEY_RIGHT:
-            //            mShip.mThrusters.x = 0;
-            //            break;
         case KeyEvent::KEY_LEFT:
-            mShip.mThrusters.w = 0.0;
-            break;
         case KeyEvent::KEY_RIGHT:
             mShip.mThrusters.w = 0.0;
             break;

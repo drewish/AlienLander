@@ -16,12 +16,10 @@ void Ship::setup()
 void Ship::update()
 {
     mAcc = Vec4f(0, 0, -0.00001, 0); // gravity
-    mAcc += Vec4f(0, 0, mMainMotor, 0);
 
     // x/y thrusters should be summed up into a vector then apply that
     // considering the ship's heading (stored in mPos.w)
-    //Vec2f vec = Vec2f(sin(mShip.mPos.w), cos(mShip.mPos.w)) * 0.009;
-    mAcc += mThrusters;
+    mAcc += Vec4f(sin(mPos.w) * mThrusters.x, cos(mPos.w) * mThrusters.y, mThrusters.z, mThrusters.w);
 
     // FIXME:
     Vec3f drag = (mVel.xyz() * -1) * mVel.xyz().lengthSquared() * 500;
@@ -39,7 +37,3 @@ void Ship::update()
     }
 }
 
-float Ship::cameraRotation()
-{
-    return 1.0 - mPos.z;
-}
