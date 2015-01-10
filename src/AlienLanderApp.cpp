@@ -285,46 +285,19 @@ void AlienLanderApp::touchesMoved( TouchEvent event )
 
 void AlienLanderApp::keyDown( KeyEvent event )
 {
-    float rotationThrust = 0.0001;
-    float lateralThrust = 0.00001;
-
     switch( event.getCode() ) {
         case KeyEvent::KEY_ESCAPE:
             quit();
             break;
-        case KeyEvent::KEY_SPACE:
-            mShip.mThrusters.z = 0.00008;
-            break;
-        case KeyEvent::KEY_DOWN:
-            mShip.mThrusters.y = +lateralThrust;
-            break;
-        case KeyEvent::KEY_UP:
-            mShip.mThrusters.y = -lateralThrust;
-            break;
-        case app::KeyEvent::KEY_LEFT:
-            mShip.mThrusters.w = rotationThrust;
-            break;
-        case app::KeyEvent::KEY_RIGHT:
-            mShip.mThrusters.w = -rotationThrust;
+        default:
+            mShip.keyDown(event);
             break;
     }
 }
 
 void AlienLanderApp::keyUp( KeyEvent event )
 {
-    switch( event.getCode() ) {
-        case KeyEvent::KEY_SPACE:
-            mShip.mThrusters.z = 0;
-            break;
-        case KeyEvent::KEY_DOWN:
-        case KeyEvent::KEY_UP:
-            mShip.mThrusters.y = 0.0;
-            break;
-        case KeyEvent::KEY_LEFT:
-        case KeyEvent::KEY_RIGHT:
-            mShip.mThrusters.w = 0.0;
-            break;
-    }
+    mShip.keyUp(event);
 }
 
 

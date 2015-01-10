@@ -8,6 +8,7 @@
 
 #include "Ship.h"
 
+using namespace app;
 
 void Ship::setup()
 {
@@ -37,3 +38,43 @@ void Ship::update()
     }
 }
 
+void Ship::keyDown( KeyEvent event )
+{
+    float rotationThrust = 0.0001;
+    float lateralThrust = 0.00001;
+
+    switch( event.getCode() ) {
+        case KeyEvent::KEY_SPACE:
+            mThrusters.z = 0.00008;
+            break;
+        case KeyEvent::KEY_DOWN:
+            mThrusters.y = +lateralThrust;
+            break;
+        case KeyEvent::KEY_UP:
+            mThrusters.y = -lateralThrust;
+            break;
+        case app::KeyEvent::KEY_LEFT:
+            mThrusters.w = rotationThrust;
+            break;
+        case app::KeyEvent::KEY_RIGHT:
+            mThrusters.w = -rotationThrust;
+            break;
+    }
+}
+
+void Ship::keyUp( KeyEvent event )
+{
+    switch( event.getCode() ) {
+        case KeyEvent::KEY_SPACE:
+            mThrusters.z = 0;
+            break;
+        case KeyEvent::KEY_DOWN:
+        case KeyEvent::KEY_UP:
+            mThrusters.y = 0.0;
+            break;
+        case KeyEvent::KEY_LEFT:
+        case KeyEvent::KEY_RIGHT:
+            mThrusters.w = 0.0;
+            break;
+    }
+}

@@ -9,13 +9,16 @@
 #ifndef __AlienLander__Ship__
 #define __AlienLander__Ship__
 
+#include "cinder/app/KeyEvent.h"
+
 using namespace ci;
-using namespace std;
 
 class Ship {
 public:
     void setup();
     void update();
+    void keyDown( app::KeyEvent event );
+    void keyUp( app::KeyEvent event );
 
     Vec4f mThrusters = Vec4f::zero();
     Vec4f mAcc = Vec4f::zero();
