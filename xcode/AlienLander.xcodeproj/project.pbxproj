@@ -15,7 +15,6 @@
 		2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 526114993F034EFEAD0FF5B3 /* CinderApp.icns */; };
 		498566431A0C917B00A76295 /* SegmentDisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 498566421A0C917B00A76295 /* SegmentDisplay.cpp */; };
 		49C8F2821A0DD15100AE0DF4 /* Ship.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C8F2801A0DD15100AE0DF4 /* Ship.cpp */; };
-		49C8F2861A0DDBB000AE0DF4 /* Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C8F2841A0DDBB000AE0DF4 /* Map.cpp */; };
 		49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */ = {isa = PBXBuildFile; fileRef = 49FBDEF31A03FB5F0019CAB2 /* usa.png */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5323E6B60EAFCA7E003A9687 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B50EAFCA7E003A9687 /* QTKit.framework */; };
@@ -43,8 +42,6 @@
 		49BFFDA11A08A727009085F3 /* moon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = moon.png; path = ../resources/moon.png; sourceTree = "<group>"; };
 		49C8F2801A0DD15100AE0DF4 /* Ship.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Ship.cpp; path = ../src/Ship.cpp; sourceTree = "<group>"; };
 		49C8F2831A0DD1A500AE0DF4 /* Ship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Ship.h; path = ../include/Ship.h; sourceTree = "<group>"; };
-		49C8F2841A0DDBB000AE0DF4 /* Map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Map.cpp; path = ../src/Map.cpp; sourceTree = "<group>"; };
-		49C8F2871A0DDBCC00AE0DF4 /* Map.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Map.h; path = ../include/Map.h; sourceTree = "<group>"; };
 		49FBDEF31A03FB5F0019CAB2 /* usa.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = usa.png; path = ../resources/usa.png; sourceTree = "<group>"; };
 		526114993F034EFEAD0FF5B3 /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = CinderApp.icns; path = ../resources/CinderApp.icns; sourceTree = "<group>"; };
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
@@ -88,7 +85,6 @@
 			isa = PBXGroup;
 			children = (
 				FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */,
-				49C8F2841A0DDBB000AE0DF4 /* Map.cpp */,
 				498566421A0C917B00A76295 /* SegmentDisplay.cpp */,
 				49C8F2801A0DD15100AE0DF4 /* Ship.cpp */,
 			);
@@ -145,7 +141,6 @@
 			isa = PBXGroup;
 			children = (
 				53A9217A3EE34D10A08774F0 /* AlienLander_Prefix.pch */,
-				49C8F2871A0DDBCC00AE0DF4 /* Map.h */,
 				191AC45670D244B4BECCEE81 /* Resources.h */,
 				498566411A0C917100A76295 /* SegmentDisplay.h */,
 				49C8F2831A0DD1A500AE0DF4 /* Ship.h */,
@@ -248,7 +243,6 @@
 			files = (
 				49C8F2821A0DD15100AE0DF4 /* Ship.cpp in Sources */,
 				498566431A0C917B00A76295 /* SegmentDisplay.cpp in Sources */,
-				49C8F2861A0DDBB000AE0DF4 /* Map.cpp in Sources */,
 				C42E9BA72DCF4A808AD3154F /* AlienLanderApp.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

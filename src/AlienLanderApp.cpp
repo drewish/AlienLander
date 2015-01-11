@@ -14,7 +14,7 @@ TODO list:
 #include "cinder/gl/Vbo.h"
 #include "cinder/Utilities.h"
 #include <boost/format.hpp>
-#include "Map.h"
+#include "Resources.h"
 #include "SegmentDisplay.h"
 #include "Ship.h"
 
@@ -42,7 +42,6 @@ public:
     int mLines = 40;
 
     Ship mShip;
-//    Map mMap;
     SegmentDisplay mDisplay = SegmentDisplay(16, Vec2i(0, 0), 3);
 
 
