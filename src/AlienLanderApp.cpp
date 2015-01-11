@@ -3,7 +3,6 @@ TODO list:
  - standardize on either Y or Z axis for heights
  - fix point of rotation, should move towards closer edge as you descend
  - get zoom scaling from view point rather than edge of texture
- - optimize text display to use VBO
  - Use touch for scaling/rotation/panning
  - Detect landing/collision
  - Compute/Display height over ground
@@ -44,7 +43,7 @@ public:
 
     Ship mShip;
 //    Map mMap;
-    SegmentDisplay mDisplay;
+    SegmentDisplay mDisplay = SegmentDisplay(16, Vec2i(0, 0), 3);
 
 
     gl::VboMeshRef	mMaskMesh;
@@ -54,6 +53,12 @@ public:
     CameraPersp     mCamera;
     Matrix44f       mTexTransform;
     float           mZoom = 0.5;
+
+    Color mBlack = Color::black();
+    Color mBlue = Color8u(66, 161, 235);
+    Color mDarkBlue = Color8u::hex(0x1A3E5A);
+    Color mRed = Color8u(240,0,0);
+
 };
 
 void AlienLanderApp::prepareSettings( Settings *settings )
@@ -69,7 +74,7 @@ void AlienLanderApp::setup()
         mTexture = gl::Texture::create( loadImage( loadResource( RES_US_SQUARE ) ) );
     }
     catch( ... ) {
-        std::cout << "unable to load the texture file!" << std::endl;
+        console() << "unable to load the texture file!" << std::endl;
     }
     mTexture->setWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
@@ -77,16 +82,17 @@ void AlienLanderApp::setup()
         mShader = gl::GlslProg::create( loadResource( RES_VERT ), loadResource( RES_FRAG ) );
     }
     catch( gl::GlslProgCompileExc &exc ) {
-        std::cout << "Shader compile error: " << std::endl;
-        std::cout << exc.what();
+        console() << "Shader compile error: " << std::endl;
+        console() << exc.what();
     }
     catch( ... ) {
-        std::cout << "Unable to load shader" << std::endl;
+        console() << "Unable to load shader" << std::endl;
     }
 
     buildMeshes();
 
     mShip.setup();
+    mDisplay.setup();
 
     setFullScreen( true );
     setFrameRate(60);
@@ -175,6 +181,10 @@ void AlienLanderApp::update()
 {
     mShip.update();
 
+    float fps = getAverageFps();
+    boost::format formatter("%+05f");
+    mDisplay.update("FPS " + (formatter % fps).str(), (fps > 30) ? mBlue : mRed, mDarkBlue);
+
 //    mZoom = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
 
     // TODO: Need to change the focus point to remain parallel as we descend
@@ -200,35 +210,17 @@ void AlienLanderApp::update()
 
 void AlienLanderApp::draw()
 {
-    Color8u black = Color::black();
-    Color8u blue = Color8u(66, 161, 235);
-    Color8u darkBlue = Color8u::hex(0x1A3E5A);
-
     gl::pushMatrices();
 
     gl::enableDepthRead( true );
     gl::enableDepthWrite( true );
-    gl::clear( black, true );
-
-    gl::lineWidth(2);
-    Vec2f pos = Vec2f(2, 2);
-    boost::format formatter("%+05f");
-    mDisplay.mOn = (getAverageFps() > 30) ? blue : Color8u(240,0,0);
-    mDisplay.mOff = darkBlue;
-//    pos.y += 2 + mDisplay.drawString("Pos " + (formatter % mShip.mPos).str(), pos, 1.0).y;
-//    pos.y += 2 + mDisplay.drawString("Acc " + (formatter % mShip.mAcc).str(), pos, 1.0).y;
-//    pos.y += 2 + mDisplay.drawString("Vel " + (formatter % mShip.mVel).str(), pos, 1.0).y;
-    mDisplay.drawString("FPS " + (formatter % getAverageFps()).str(), pos, 1.0).y;
-//  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % mShip.mPos.z).str() + "km   ", pos, 0.75).y;
-//  pos.y += 2 + mDisplay.drawString("Alt " + (formatter % (mShip.mPos.z - mMap.valueAt((int)shipPos.x, (int)shipPos.y))).str() + "km   ", pos, 0.75).y;
+    gl::clear( mBlack, true );
 
     gl::setMatrices( mCamera );
+    gl::scale(2 * Vec3f( 10, 10, 10 ) );
+
 
     gl::lineWidth(1);
-
-    gl::scale(2* Vec3f( 10, 10, 10 ) );
-
-
     mTexture->enableAndBind();
     mShader->bind();
     mShader->uniform( "tex0", 0 );
@@ -239,7 +231,7 @@ void AlienLanderApp::draw()
     int indiciesInMask = mPoints * 2;
     // Draw front to back to allow the depth buffer to do its job.
     for (int i = mLines - 1; i >= 0; --i) {
-        gl::color( blue );
+        gl::color( mBlue );
         gl::drawRange( mLineMesh, i * indiciesInLine, indiciesInLine);
 
         gl::color( Color::gray(0.1) );
@@ -252,12 +244,23 @@ void AlienLanderApp::draw()
     mTexture->unbind();
 
 
-    gl::color( Color::gray(0.8) );
-    Vec2f vec = Vec2f(cos(mShip.mPos.w), sin(mShip.mPos.w)) * 2.0;
-    gl::drawVector(Vec3f(0.0,5.0,0.0), Vec3f(vec.x, 5.0, vec.y));
+/*
+    // Vector pointing north
+    gl::lineWidth(2);
+    gl::color( mRed );
+    Vec2f vec = Vec2f(cos(mShip.mPos.w), sin(mShip.mPos.w)) / 40;
+    gl::drawVector(Vec3f(0.0,1 / 10.0,0.0), Vec3f(vec.x, 1 / 10.0, vec.y), 1/20.0, 1/100.0);
+*/
+
+    gl::disableDepthRead( );
+    gl::disableDepthWrite( );
 
 
     gl::popMatrices();
+
+
+    gl::lineWidth(2);
+    mDisplay.draw();
 }
 
 

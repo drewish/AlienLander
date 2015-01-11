@@ -112,57 +112,101 @@ int charPatterns[CHAR_LENGTH] = {
     0x0000,  /*  */
 };
 
-Vec2f SegmentDisplay::charDimensions(float scale)
+SegmentDisplay::SegmentDisplay(uint length, const Vec2f pos, float size)
+    : mLength(length), mPosition(pos), mSize(size)
 {
-    return Vec2f(18, 22) * scale;
 }
 
-void SegmentDisplay::drawChar(char c, Vec2f offset, float scale)
+void SegmentDisplay::setup()
 {
-    typedef struct
-    {
-        Vec2i a, b;
-    } Segment;
+    int totalVertices = 32 * mLength;
+    int totalIndicies = 32 * mLength;
+    gl::VboMesh::Layout layout;
+    layout.setStaticIndices();
+    layout.setStaticPositions();
+    layout.setDynamicColorsRGB();
+    mMesh = gl::VboMesh::create( totalVertices, totalIndicies, layout, GL_LINES );
 
-    Segment segments[16] = {
-        { Vec2i(6,2), Vec2i(12,2) },
-        { Vec2i(12,2), Vec2i(18,2) },
-        { Vec2i(18,2), Vec2i(16,12) },
-        { Vec2i(16,12), Vec2i(14,22) },
-        { Vec2i(14,22), Vec2i(8,22) },
-        { Vec2i(8,22), Vec2i(2,22) },
-        { Vec2i(2,22), Vec2i(4,12) },
-        { Vec2i(4,12), Vec2i(6,2) },
-        { Vec2i(4,12), Vec2i(10,12) },
-        { Vec2i(10,12), Vec2i(16,12) },
-        { Vec2i(6,2), Vec2i(10,12) },
-        { Vec2i(10,12), Vec2i(12,2) },
-        { Vec2i(10,12), Vec2i(18,2) },
-        { Vec2i(10,12), Vec2i(14,22) },
-        { Vec2i(10,12), Vec2i(8,22) },
-        { Vec2i(10,12), Vec2i(2,22) },
+    Vec3f pos = Vec3f(mPosition, 0);
+
+    vector<Vec3f> verts;
+    vector<uint32_t> indices;
+
+    Vec3i coords[9] = {
+        Vec3i( 6, 2,0) * mSize,
+        Vec3i(12, 2,0) * mSize,
+        Vec3i(18, 2,0) * mSize,
+        Vec3i(16,12,0) * mSize,
+        Vec3i(14,22,0) * mSize,
+        Vec3i( 8,22,0) * mSize,
+        Vec3i( 2,22,0) * mSize,
+        Vec3i( 4,12,0) * mSize,
+        Vec3i(10,12,0) * mSize,
     };
 
-    if (c < CHAR_OFFSET || c > CHAR_OFFSET + CHAR_LENGTH - 1) return;
 
-    int pattern = charPatterns[(int)c - 32];
-    for (int i = 0; i < 16; i++)
-    {
-        Segment *s = segments+i;
-        Color color = (pattern & (1 << i)) ? mOn : mOff;
-        gl::color(color);
-        gl::drawLine((s->a * scale) + offset, (s->b * scale) + offset);
+    int index = 0;
+    for (int i=0; i < mLength; i++) {
+        for (int j=0; j < 32; j++) {
+            indices.push_back(index++);
+        }
+
+        verts.push_back(coords[0] + pos); verts.push_back(coords[1] + pos);
+        verts.push_back(coords[1] + pos); verts.push_back(coords[2] + pos);
+        verts.push_back(coords[2] + pos); verts.push_back(coords[3] + pos);
+        verts.push_back(coords[3] + pos); verts.push_back(coords[4] + pos);
+        verts.push_back(coords[4] + pos); verts.push_back(coords[5] + pos);
+        verts.push_back(coords[5] + pos); verts.push_back(coords[6] + pos);
+        verts.push_back(coords[6] + pos); verts.push_back(coords[7] + pos);
+        verts.push_back(coords[7] + pos); verts.push_back(coords[0] + pos);
+        verts.push_back(coords[7] + pos); verts.push_back(coords[8] + pos);
+        verts.push_back(coords[8] + pos); verts.push_back(coords[3] + pos);
+        verts.push_back(coords[0] + pos); verts.push_back(coords[8] + pos);
+        verts.push_back(coords[8] + pos); verts.push_back(coords[1] + pos);
+        verts.push_back(coords[8] + pos); verts.push_back(coords[2] + pos);
+        verts.push_back(coords[8] + pos); verts.push_back(coords[4] + pos);
+        verts.push_back(coords[8] + pos); verts.push_back(coords[5] + pos);
+        verts.push_back(coords[8] + pos); verts.push_back(coords[6] + pos);
+
+        pos += Vec3f(mDimensions.x, 0, 0);
+    }
+
+    mMesh->bufferIndices( indices );
+    mMesh->bufferPositions( verts );
+}
+
+void SegmentDisplay::update(string s, const Color on, const Color off)
+{
+    mOn = on;
+    mOff = off;
+    update(s);
+}
+
+void SegmentDisplay::update(string s)
+{
+    char c;
+    int len = s.length();
+    gl::VboMesh::VertexIter iter = mMesh->mapVertexBuffer();
+
+    for (int j = 0; j < mLength; ++j) {
+        c = j < len ? s[j] : ' ';
+
+        if (c < CHAR_OFFSET || c > CHAR_OFFSET + CHAR_LENGTH - 1) return;
+
+        int pattern = charPatterns[(int)c - 32];
+        for (int i = 0; i < 16; i++)
+        {
+            Color color = (pattern & (1 << i)) ? mOn : mOff;
+            iter.setColorRGB(color);
+            ++iter;
+            iter.setColorRGB(color);
+            ++iter;
+        }
     }
 }
 
-Vec2f SegmentDisplay::drawString(string s, Vec2f offset, float scale)
+void SegmentDisplay::draw()
 {
-    Vec2f dimensions = charDimensions(scale);
-    Vec2f pos = offset;
-    for ( std::string::iterator it=s.begin(); it!=s.end(); ++it) {
-        drawChar(*it, pos, scale);
-        pos.x += dimensions.x;
-    }
-    return Vec2f(s.length(), 1) * dimensions;
+    gl::draw(mMesh);
 }
 
