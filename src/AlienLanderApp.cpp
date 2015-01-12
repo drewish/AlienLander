@@ -38,11 +38,11 @@ public:
 
     Vec2f mDelta1, mDelta2;
 
-    int mPoints = 21;
-    int mLines = 40;
+    uint mPoints = 21;
+    uint mLines = 40;
 
     Ship mShip;
-    SegmentDisplay mDisplay = SegmentDisplay(16, Vec2i(0, 0), 3);
+    SegmentDisplay mDisplay = SegmentDisplay(16, Vec2i(0, 0), 2);
 
 
     gl::VboMeshRef	mMaskMesh;
@@ -93,18 +93,18 @@ void AlienLanderApp::setup()
     mShip.setup();
     mDisplay.setup();
 
-    setFullScreen( true );
+//    setFullScreen( true );
     setFrameRate(60);
 
     gl::enableVerticalSync(false);
 
-    mCamera.setPerspective( 35.0f, 1.0f, 10.0f, 100.0f );
+    mCamera.setPerspective( 30.0f, 1.0f, 10.0f, 60.0f );
 }
 
 void AlienLanderApp::buildMeshes()
 {
-    int totalVertices = mPoints * mLines;
-    int totalIndicies = mPoints * mLines;
+    uint totalVertices = mPoints * mLines;
+    uint totalIndicies = mPoints * mLines;
     gl::VboMesh::Layout layout;
     layout.setStaticIndices();
     layout.setStaticPositions();
@@ -114,8 +114,8 @@ void AlienLanderApp::buildMeshes()
     vector<uint32_t> indices;
     vector<Vec3f> vertCoords;
     vector<Vec2f> texCoords;
-    for( int z = 0; z < mLines; ++z ) {
-        for( int x = 0; x < mPoints; ++x ) {
+    for( uint z = 0; z < mLines; ++z ) {
+        for( uint x = 0; x < mPoints; ++x ) {
             vertCoords.push_back( Vec3f( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5) );
             texCoords.push_back( Vec2f( x / (float)mPoints, z / (float)mLines ) );
             indices.push_back( z * mPoints + (x + 0) );
@@ -140,8 +140,8 @@ void AlienLanderApp::buildMeshes()
     vertCoords.clear();
     texCoords.clear();
 
-    for( int z = 0; z < mLines; ++z ) {
-        for( int x = 0; x < mPoints; ++x ) {
+    for( uint z = 0; z < mLines; ++z ) {
+        for( uint x = 0; x < mPoints; ++x ) {
             Vec3f vert = Vec3f( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5);
             Vec2f coord = Vec2f( x / (float)mPoints, z / (float)mLines );
 
@@ -155,7 +155,7 @@ void AlienLanderApp::buildMeshes()
             texCoords.push_back( coord );
             texCoords.push_back( coord );
         }
-        for( int x = 1; x <= mPoints * 2; x += 2 ) {
+        for( uint x = 1; x <= mPoints * 2; x += 2 ) {
             indices.push_back( z * 2 * mPoints + x - 1 );
             indices.push_back( z * 2 * mPoints + x - 0 );
         }
@@ -168,11 +168,11 @@ void AlienLanderApp::buildMeshes()
 
 void AlienLanderApp::resize()
 {
-    int height = getWindowHeight();
-    int width = getWindowWidth();
-    int margin = 20;
-    mPoints = (width - (2 * margin)) / 10;
-    mLines = (height - (2 * margin)) / 25;
+    uint height = getWindowHeight();
+    uint width = getWindowWidth();
+    uint margin = 20;
+    mPoints = (width - (2 * margin)) / 10.0;
+    mLines = (height - (2 * margin)) / 25.0;
     buildMeshes();
 }
 
@@ -226,8 +226,8 @@ void AlienLanderApp::draw()
     mShader->uniform( "texTransform", mTexTransform );
     mShader->uniform( "zoom", mZoom );
 
-    int indiciesInLine = mPoints;
-    int indiciesInMask = mPoints * 2;
+    uint indiciesInLine = mPoints;
+    uint indiciesInMask = mPoints * 2;
     // Draw front to back to allow the depth buffer to do its job.
     for (int i = mLines - 1; i >= 0; --i) {
         gl::color( mBlue );
