@@ -35,23 +35,17 @@ public:
     void update();
     void draw();
 
-
-    Vec2f mDelta1, mDelta2;
-
     uint mPoints = 21;
     uint mLines = 40;
 
     Ship mShip;
     SegmentDisplay mDisplay = SegmentDisplay(16, Vec2i(0, 0), 2);
 
-
     gl::VboMeshRef	mMaskMesh;
     gl::VboMeshRef	mLineMesh;
     gl::TextureRef	mTexture;
     gl::GlslProgRef	mShader;
     CameraPersp     mCamera;
-    Matrix44f       mTexTransform;
-    float           mZoom = 0.5;
 
     Color mBlack = Color::black();
     Color mBlue = Color8u(66, 161, 235);
@@ -95,10 +89,9 @@ void AlienLanderApp::setup()
 
 //    setFullScreen( true );
     setFrameRate(60);
-
     gl::enableVerticalSync(false);
 
-    mCamera.setPerspective( 30.0f, 1.0f, 10.0f, 60.0f );
+    mCamera.setPerspective( 40.0f, 1.0f, 10.0f, 60.0f );
 }
 
 void AlienLanderApp::buildMeshes()
@@ -184,27 +177,9 @@ void AlienLanderApp::update()
     boost::format formatter("%+05f");
     mDisplay.update("FPS " + (formatter % fps).str(), (fps > 30) ? mBlue : mRed, mDarkBlue);
 
-//    mZoom = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
-
+    float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
     // TODO: Need to change the focus point to remain parallel as we descend
-    mCamera.lookAt( Vec3f( 0.0f, 30.0f * mShip.mPos.z, 20.0f ), Vec3f(0.0,0.0,0.0), Vec3f::yAxis() );
-
-    Matrix44f center = Matrix44f(1, 0, 0, +0.5,
-                                 0, 1, 0, +0.5,
-                                 0, 0, 1, 0,
-                                 0, 0, 0, 1);
-    Matrix44f goback = Matrix44f(1, 0, 0, -0.5,
-                                 0, 1, 0, -0.5,
-                                 0, 0, 1, 0,
-                                 0, 0, 0, 1);
-    Matrix44f r = Matrix44f::createRotation(Vec3f::zAxis(), mShip.mPos.w);
-    Matrix44f s = Matrix44f::createScale(mZoom);
-    Matrix44f t = Matrix44f(1, 0, 0, mShip.mPos.x,
-                            0, 1, 0, mShip.mPos.y,
-                            0, 0, 1, 0,
-                            0, 0, 0, 1);
-
-    mTexTransform = goback * r * t * s * center;
+    mCamera.lookAt( Vec3f( 0.0f, 30.0f * z, 20.0f ), Vec3f(0.0,1.0,0.0), Vec3f::yAxis() );
 }
 
 void AlienLanderApp::draw()
@@ -223,8 +198,18 @@ void AlienLanderApp::draw()
     mTexture->enableAndBind();
     mShader->bind();
     mShader->uniform( "tex0", 0 );
-    mShader->uniform( "texTransform", mTexTransform );
-    mShader->uniform( "zoom", mZoom );
+    mShader->uniform( "zoom", 0.5f /*mZoom*/ );
+
+    // Transform the height map via the texture matrix
+    glMatrixMode( GL_TEXTURE );
+    glLoadIdentity();
+
+    float scale = mShip.mPos.z;
+    gl::translate( 0.5, 0.5 );
+    gl::rotate( mShip.mPos.w * 180 / M_PI );
+    gl::scale( scale, scale );
+    gl::translate( mShip.mPos.xy() );
+    gl::translate( -0.5, -0.5 );
 
     uint indiciesInLine = mPoints;
     uint indiciesInMask = mPoints * 2;
@@ -234,14 +219,14 @@ void AlienLanderApp::draw()
         gl::drawRange( mLineMesh, i * indiciesInLine, indiciesInLine);
 
         gl::color( Color::gray(0.1) );
-        // gl::enableWireframe();
         gl::drawRange( mMaskMesh, i * indiciesInMask, indiciesInMask);
-        // gl::disableWireframe();
     }
+
+    glLoadIdentity();
+    glMatrixMode( GL_MODELVIEW );
 
     mShader->unbind();
     mTexture->unbind();
-
 
 /*
     // Vector pointing north
@@ -265,14 +250,20 @@ void AlienLanderApp::draw()
 
 void AlienLanderApp::mouseMove( MouseEvent event )
 {
-    //    int height = getWindowHeight();
-    //    mRatio = 1 - (math<float>::clamp(event.getY(), 0, height) / height);
+//    int height = getWindowHeight();
+//    int width = getWindowWidth();
+//    mZoom = 1 - (math<float>::clamp(event.getY(), 0, height) / height);
+//    mAngle = (math<float>::clamp(event.getX(), 0, width) / width);
+//    2 * M_PI *
 }
 
 void AlienLanderApp::touchesMoved( TouchEvent event )
 {
+    return;
+    Vec2f mDelta1, mDelta2;
+
     // TODO treat the two deltas as forces acting on a rigid body.
-    // Accelenration becomse translation
+    // Acceleration becomes translation
     // Torque becomes rotation
     // Compression/tension becomes zooming
     const vector<TouchEvent::Touch>&touches = event.getTouches();
