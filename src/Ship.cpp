@@ -41,7 +41,7 @@ void Ship::update()
 void Ship::keyDown( KeyEvent event )
 {
     float rotationThrust = 0.0001;
-    float lateralThrust = 0.00001;
+    float lateralThrust = 0.0001;
 
     switch( event.getCode() ) {
         case KeyEvent::KEY_SPACE:

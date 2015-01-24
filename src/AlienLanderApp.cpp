@@ -2,7 +2,6 @@
 TODO list:
  - standardize on either Y or Z axis for heights
  - fix point of rotation, should move towards closer edge as you descend
- - get zoom scaling from view point rather than edge of texture
  - Use touch for scaling/rotation/panning
  - Detect landing/collision
  - Compute/Display height over ground
@@ -91,7 +90,7 @@ void AlienLanderApp::setup()
     setFrameRate(60);
     gl::enableVerticalSync(false);
 
-    mCamera.setPerspective( 40.0f, 1.0f, 10.0f, 60.0f );
+    mCamera.setPerspective( 40.0f, 1.0f, 0.5f, 3.0f );
 }
 
 void AlienLanderApp::buildMeshes()
@@ -179,7 +178,7 @@ void AlienLanderApp::update()
 
     float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
     // TODO: Need to change the focus point to remain parallel as we descend
-    mCamera.lookAt( Vec3f( 0.0f, 30.0f * z, 20.0f ), Vec3f(0.0,1.0,0.0), Vec3f::yAxis() );
+    mCamera.lookAt( Vec3f( 0.0f, 1.5f * z, 1.0f ), Vec3f(0.0,0.1,0.0), Vec3f::yAxis() );
 }
 
 void AlienLanderApp::draw()
@@ -191,8 +190,6 @@ void AlienLanderApp::draw()
     gl::clear( mBlack, true );
 
     gl::setMatrices( mCamera );
-    gl::scale(2 * Vec3f( 10, 10, 10 ) );
-
 
     gl::lineWidth(1);
     mTexture->enableAndBind();
