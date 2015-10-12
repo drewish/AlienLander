@@ -1,4 +1,4 @@
-#version 120
+#version 150
 
 uniform sampler2D tex0;
 uniform float zoom;

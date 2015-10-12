@@ -6,7 +6,9 @@ TODO list:
  - Detect landing/collision
  - Compute/Display height over ground
 */
-#include "cinder/app/AppNative.h"
+#include "cinder/app/App.h"
+#include "cinder/app/RendererGl.h"
+
 #include "cinder/Camera.h"
 #include "cinder/gl/GlslProg.h"
 #include "cinder/gl/Texture.h"
@@ -21,9 +23,8 @@ using namespace ci;
 using namespace ci::app;
 using namespace std;
 
-class AlienLanderApp : public AppNative {
+class AlienLanderApp : public App {
 public:
-    void prepareSettings( Settings *settings ) override;
     void setup();
     void buildMeshes();
     void resize();
@@ -38,7 +39,7 @@ public:
     uint mLines = 40;
 
     Ship mShip;
-    SegmentDisplay mDisplay = SegmentDisplay(16, Vec2i(0, 0), 2);
+    SegmentDisplay mDisplay = SegmentDisplay(16, ivec2(0, 0), 2);
 
     gl::VboMeshRef	mMaskMesh;
     gl::VboMeshRef	mLineMesh;
@@ -53,10 +54,9 @@ public:
 
 };
 
-void AlienLanderApp::prepareSettings( Settings *settings )
+void prepareSettings( App::Settings *settings )
 {
-    settings->enableMultiTouch();
-    settings->enableHighDensityDisplay();
+    settings->setHighDensityDisplayEnabled();
     settings->setWindowSize(800, 800);
 }
 
@@ -71,7 +71,10 @@ void AlienLanderApp::setup()
     mTexture->setWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
     try {
-        mShader = gl::GlslProg::create( loadResource( RES_VERT ), loadResource( RES_FRAG ) );
+        mShader = ci::gl::GlslProg::create(
+            ci::app::loadResource( RES_VERT ),
+            ci::app::loadResource( RES_FRAG )
+        );
     }
     catch( gl::GlslProgCompileExc &exc ) {
         console() << "Shader compile error: " << std::endl;
@@ -80,6 +83,7 @@ void AlienLanderApp::setup()
     catch( ... ) {
         console() << "Unable to load shader" << std::endl;
     }
+
 
     buildMeshes();
 
@@ -104,12 +108,12 @@ void AlienLanderApp::buildMeshes()
     mLineMesh = gl::VboMesh::create( totalVertices, totalIndicies, layout, GL_LINE_STRIP );
 
     vector<uint32_t> indices;
-    vector<Vec3f> vertCoords;
-    vector<Vec2f> texCoords;
+    vector<vec3> vertCoords;
+    vector<vec2> texCoords;
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
-            vertCoords.push_back( Vec3f( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5) );
-            texCoords.push_back( Vec2f( x / (float)mPoints, z / (float)mLines ) );
+            vertCoords.push_back( vec3( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5) );
+            texCoords.push_back( vec2( x / (float)mPoints, z / (float)mLines ) );
             indices.push_back( z * mPoints + (x + 0) );
         }
     }
@@ -134,8 +138,8 @@ void AlienLanderApp::buildMeshes()
 
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
-            Vec3f vert = Vec3f( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5);
-            Vec2f coord = Vec2f( x / (float)mPoints, z / (float)mLines );
+            vec3 vert = vec3( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5);
+            vec2 coord = vec2( x / (float)mPoints, z / (float)mLines );
 
             vertCoords.push_back(vert);
             // the vertex shader just uses the texture value as an offset to
@@ -178,7 +182,7 @@ void AlienLanderApp::update()
 
     float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
     // TODO: Need to change the focus point to remain parallel as we descend
-    mCamera.lookAt( Vec3f( 0.0f, 1.5f * z, 1.0f ), Vec3f(0.0,0.1,0.0), Vec3f::yAxis() );
+    mCamera.lookAt( vec3( 0.0f, 1.5f * z, 1.0f ), vec3(0.0,0.1,0.0), vec3( 0, 1, 0 ) );
 }
 
 void AlienLanderApp::draw()
@@ -191,11 +195,12 @@ void AlienLanderApp::draw()
 
     gl::setMatrices( mCamera );
 
-    gl::lineWidth(1);
-    mTexture->enableAndBind();
-    mShader->bind();
+    gl::ScopedLineWidth lineWidthScope(1);
+    gl::ScopedTextureBind textureScope( mTexture,0 );
+
+    gl::ScopedGlslProg glslScope( mShader );
     mShader->uniform( "tex0", 0 );
-    mShader->uniform( "zoom", 0.5f /*mZoom*/ );
+    mShader->uniform( "zoom", 0.5f );// mZoom );
 
     // Transform the height map via the texture matrix
     glMatrixMode( GL_TEXTURE );
@@ -222,16 +227,11 @@ void AlienLanderApp::draw()
     glLoadIdentity();
     glMatrixMode( GL_MODELVIEW );
 
-    mShader->unbind();
-    mTexture->unbind();
-
-/*
-    // Vector pointing north
-    gl::lineWidth(2);
-    gl::color( mRed );
-    Vec2f vec = Vec2f(cos(mShip.mPos.w), sin(mShip.mPos.w)) / 40;
-    gl::drawVector(Vec3f(0.0,1 / 10.0,0.0), Vec3f(vec.x, 1 / 10.0, vec.y), 1/20.0, 1/100.0);
-*/
+//    // Vector pointing north
+//    gl::lineWidth(2);
+//    gl::color( mRed );
+//    vec2 vec = vec2(cos(mShip.mPos.w), sin(mShip.mPos.w)) / 40;
+//    gl::drawVector(vec3(0.0,1 / 10.0,0.0), vec3(vec.x, 1 / 10.0, vec.y), 1/20.0, 1/100.0);
 
     gl::disableDepthRead( );
     gl::disableDepthWrite( );
@@ -257,7 +257,7 @@ void AlienLanderApp::mouseMove( MouseEvent event )
 void AlienLanderApp::touchesMoved( TouchEvent event )
 {
     return;
-    Vec2f mDelta1, mDelta2;
+    vec2 mDelta1, mDelta2;
 
     // TODO treat the two deltas as forces acting on a rigid body.
     // Acceleration becomes translation
@@ -291,4 +291,4 @@ void AlienLanderApp::keyUp( KeyEvent event )
 }
 
 
-CINDER_APP_NATIVE( AlienLanderApp, RendererGl )
+CINDER_APP( AlienLanderApp, RendererGl( RendererGl::Options().msaa( 16 ) ), prepareSettings )

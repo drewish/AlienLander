@@ -7,5 +7,5 @@
 #define RES_MOON_BIG    CINDER_RESOURCE( ../resources/, moon-big.png,   131, IMAGE )
 
 #define RES_US_SQUARE   CINDER_RESOURCE( ../resources/, usa-square.png, 131, IMAGE )
-#define RES_VERT				CINDER_RESOURCE( ../resources/, vert.glsl, 132, GLSL )
-#define RES_FRAG				CINDER_RESOURCE( ../resources/, frag.glsl, 133, GLSL )
+#define RES_VERT		CINDER_RESOURCE( ../resources/, vert.glsl, 132, GLSL )
+#define RES_FRAG		CINDER_RESOURCE( ../resources/, frag.glsl, 133, GLSL )

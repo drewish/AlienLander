@@ -8,6 +8,9 @@
 
 #include "SegmentDisplay.h"
 
+using namespace ci;
+using namespace ci::geom;
+using namespace std;
 
 // Awesome font stolen from http://www.msarnoff.org/alpha32/
 // The first 32, non-printable ASCII characters are omitted.
@@ -127,21 +130,21 @@ void SegmentDisplay::setup()
     layout.setDynamicColorsRGB();
     mMesh = gl::VboMesh::create( totalVertices, totalIndicies, layout, GL_LINES );
 
-    Vec3f pos = Vec3f(mPosition, 0);
+    vec3 pos = vec3(mPosition, 0);
 
-    vector<Vec3f> verts;
+    vector<vec3> verts;
     vector<uint32_t> indices;
 
-    Vec3i coords[9] = {
-        Vec3i( 6, 2,0) * mSize,
-        Vec3i(12, 2,0) * mSize,
-        Vec3i(18, 2,0) * mSize,
-        Vec3i(16,12,0) * mSize,
-        Vec3i(14,22,0) * mSize,
-        Vec3i( 8,22,0) * mSize,
-        Vec3i( 2,22,0) * mSize,
-        Vec3i( 4,12,0) * mSize,
-        Vec3i(10,12,0) * mSize,
+    vec3 coords[9] = {
+        vec3( 6, 2,0) * mSize,
+        vec3(12, 2,0) * mSize,
+        vec3(18, 2,0) * mSize,
+        vec3(16,12,0) * mSize,
+        vec3(14,22,0) * mSize,
+        vec3( 8,22,0) * mSize,
+        vec3( 2,22,0) * mSize,
+        vec3( 4,12,0) * mSize,
+        vec3(10,12,0) * mSize,
     };
 
 
@@ -168,7 +171,7 @@ void SegmentDisplay::setup()
         verts.push_back(coords[8] + pos); verts.push_back(coords[5] + pos);
         verts.push_back(coords[8] + pos); verts.push_back(coords[6] + pos);
 
-        pos += Vec3f(mDimensions.x, 0, 0);
+        pos += vec3(mDimensions.x, 0, 0);
     }
 
     mMesh->bufferIndices( indices );

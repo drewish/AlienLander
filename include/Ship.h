@@ -20,10 +20,10 @@ public:
     void keyDown( app::KeyEvent event );
     void keyUp( app::KeyEvent event );
 
-    Vec4f mThrusters = Vec4f::zero();
-    Vec4f mAcc = Vec4f::zero();
-    Vec4f mVel = Vec4f::zero();
-    Vec4f mPos = Vec4f(0.0, 0.0, 1, 0.0);
+    vec4 mThrusters = vec4();
+    vec4 mAcc = vec4();
+    vec4 mVel = vec4();
+    vec4 mPos = vec4(0.0, 0.0, 1, 0.0);
 };
 
 #endif /* defined(__AlienLander__Ship__) */
