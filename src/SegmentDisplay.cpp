@@ -12,10 +12,11 @@ using namespace ci;
 using namespace ci::geom;
 using namespace std;
 
+const uint SEGMENTS = 16;
 // Awesome font stolen from http://www.msarnoff.org/alpha32/
 // The first 32, non-printable ASCII characters are omitted.
-const int CHAR_OFFSET = 32;
-const int CHAR_LENGTH = 96;
+const uint CHAR_OFFSET = 32;
+const uint CHAR_LENGTH = 96;
 int charPatterns[CHAR_LENGTH] = {
     0x0000,  /*   */
     0x1822,  /* ! */
@@ -112,104 +113,106 @@ int charPatterns[CHAR_LENGTH] = {
     0x4800,  /* | */
     0x4a21,  /* } */
     0x0a85,  /* ~ */
-    0x0000,  /*  */
+    0x0000,  /* DEL */
 };
 
-SegmentDisplay::SegmentDisplay(uint length, const Vec2f pos, float size)
-    : mLength(length), mPosition(pos), mSize(size)
+SegmentDisplay::SegmentDisplay(uint length, const vec2 &pos, float size)
+    : mDigits(length), mPosition(pos), mScale(size)
 {
+    mColors[1] = Color( 1, 0, 0 );
+    mColors[0] = Color( 0.25, 0, 0 );
+    mDimensions = vec2( 18, 22 ) * mScale;
 }
 
 void SegmentDisplay::setup()
 {
-    int totalVertices = 32 * mLength;
-    int totalIndicies = 32 * mLength;
-    gl::VboMesh::Layout layout;
-    layout.setStaticIndices();
-    layout.setStaticPositions();
-    layout.setDynamicColorsRGB();
-    mMesh = gl::VboMesh::create( totalVertices, totalIndicies, layout, GL_LINES );
-
-    vec3 pos = vec3(mPosition, 0);
-
-    vector<vec3> verts;
-    vector<uint32_t> indices;
-
+    // coordinates of the points where segments intersect. we need to color
+    // segments individually so each one gets its own copies of the vertexes.
     vec3 coords[9] = {
-        vec3( 6, 2,0) * mSize,
-        vec3(12, 2,0) * mSize,
-        vec3(18, 2,0) * mSize,
-        vec3(16,12,0) * mSize,
-        vec3(14,22,0) * mSize,
-        vec3( 8,22,0) * mSize,
-        vec3( 2,22,0) * mSize,
-        vec3( 4,12,0) * mSize,
-        vec3(10,12,0) * mSize,
+        vec3(  6, 2,0 ) * mScale,
+        vec3( 12, 2,0 ) * mScale,
+        vec3( 18, 2,0 ) * mScale,
+        vec3( 16,12,0 ) * mScale,
+        vec3( 14,22,0 ) * mScale,
+        vec3(  8,22,0 ) * mScale,
+        vec3(  2,22,0 ) * mScale,
+        vec3(  4,12,0 ) * mScale,
+        vec3( 10,12,0 ) * mScale,
     };
 
+    int totalVertices = 2 * SEGMENTS * mDigits;
+	vector<gl::VboMesh::Layout> bufferLayout = {
+		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
+		gl::VboMesh::Layout().usage( GL_DYNAMIC_DRAW ).attrib( geom::Attrib::COLOR, 3 )
+	};
+	mMesh = gl::VboMesh::create( totalVertices, GL_LINES, bufferLayout);
 
-    int index = 0;
-    for (int i=0; i < mLength; i++) {
-        for (int j=0; j < 32; j++) {
-            indices.push_back(index++);
-        }
+    vec3 offset = vec3(mPosition, 0);
+    vector<vec3> verts;
+    for ( int i = 0; i < mDigits; i++ ) {
+        verts.push_back( coords[0] + offset ); verts.push_back( coords[1] + offset );
+        verts.push_back( coords[1] + offset ); verts.push_back( coords[2] + offset );
+        verts.push_back( coords[2] + offset ); verts.push_back( coords[3] + offset );
+        verts.push_back( coords[3] + offset ); verts.push_back( coords[4] + offset );
+        verts.push_back( coords[4] + offset ); verts.push_back( coords[5] + offset );
+        verts.push_back( coords[5] + offset ); verts.push_back( coords[6] + offset );
+        verts.push_back( coords[6] + offset ); verts.push_back( coords[7] + offset );
+        verts.push_back( coords[7] + offset ); verts.push_back( coords[0] + offset );
+        verts.push_back( coords[7] + offset ); verts.push_back( coords[8] + offset );
+        verts.push_back( coords[8] + offset ); verts.push_back( coords[3] + offset );
+        verts.push_back( coords[0] + offset ); verts.push_back( coords[8] + offset );
+        verts.push_back( coords[8] + offset ); verts.push_back( coords[1] + offset );
+        verts.push_back( coords[8] + offset ); verts.push_back( coords[2] + offset );
+        verts.push_back( coords[8] + offset ); verts.push_back( coords[4] + offset );
+        verts.push_back( coords[8] + offset ); verts.push_back( coords[5] + offset );
+        verts.push_back( coords[8] + offset ); verts.push_back( coords[6] + offset );
 
-        verts.push_back(coords[0] + pos); verts.push_back(coords[1] + pos);
-        verts.push_back(coords[1] + pos); verts.push_back(coords[2] + pos);
-        verts.push_back(coords[2] + pos); verts.push_back(coords[3] + pos);
-        verts.push_back(coords[3] + pos); verts.push_back(coords[4] + pos);
-        verts.push_back(coords[4] + pos); verts.push_back(coords[5] + pos);
-        verts.push_back(coords[5] + pos); verts.push_back(coords[6] + pos);
-        verts.push_back(coords[6] + pos); verts.push_back(coords[7] + pos);
-        verts.push_back(coords[7] + pos); verts.push_back(coords[0] + pos);
-        verts.push_back(coords[7] + pos); verts.push_back(coords[8] + pos);
-        verts.push_back(coords[8] + pos); verts.push_back(coords[3] + pos);
-        verts.push_back(coords[0] + pos); verts.push_back(coords[8] + pos);
-        verts.push_back(coords[8] + pos); verts.push_back(coords[1] + pos);
-        verts.push_back(coords[8] + pos); verts.push_back(coords[2] + pos);
-        verts.push_back(coords[8] + pos); verts.push_back(coords[4] + pos);
-        verts.push_back(coords[8] + pos); verts.push_back(coords[5] + pos);
-        verts.push_back(coords[8] + pos); verts.push_back(coords[6] + pos);
-
-        pos += vec3(mDimensions.x, 0, 0);
+        offset += vec3( mDimensions.x, 0, 0 );
     }
+    mMesh->bufferAttrib( geom::Attrib::POSITION, verts );
 
-    mMesh->bufferIndices( indices );
-    mMesh->bufferPositions( verts );
+    gl::ScopedLineWidth lineScope(2);
+    mBatch = gl::Batch::create( mMesh, gl::getStockShader( gl::ShaderDef().color() ) );
 }
 
-void SegmentDisplay::update(string s, const Color on, const Color off)
+SegmentDisplay& SegmentDisplay::colors( const Color &on, const Color &off )
 {
-    mOn = on;
-    mOff = off;
-    update(s);
+    mColors[1] = on;
+    mColors[0] = off;
+
+    return *this;
 }
 
-void SegmentDisplay::update(string s)
+SegmentDisplay& SegmentDisplay::display( string s )
 {
     char c;
     int len = s.length();
-    gl::VboMesh::VertexIter iter = mMesh->mapVertexBuffer();
 
-    for (int j = 0; j < mLength; ++j) {
-        c = j < len ? s[j] : ' ';
+	auto mappedColorAttrib = mMesh->mapAttrib3f( geom::Attrib::COLOR, false );
+    for (int j = 0; j < mDigits; ++j) {
+        c = ' ';
+        // Make sure we're don't go off the end of the string and that the
+        // character is one in our table.
+        if (j < len && s[j] > CHAR_OFFSET && s[j] < CHAR_OFFSET + CHAR_LENGTH) {
+            c = s[j];
+        }
 
-        if (c < CHAR_OFFSET || c > CHAR_OFFSET + CHAR_LENGTH - 1) return;
-
-        int pattern = charPatterns[(int)c - 32];
-        for (int i = 0; i < 16; i++)
-        {
-            Color color = (pattern & (1 << i)) ? mOn : mOff;
-            iter.setColorRGB(color);
-            ++iter;
-            iter.setColorRGB(color);
-            ++iter;
+        int pattern = charPatterns[(int)c - CHAR_OFFSET];
+        for ( int i = 0; i < SEGMENTS; i++ ) {
+            vec3 color = (pattern & (1 << i)) ? mColors[1] : mColors[0];
+            *mappedColorAttrib = color;
+            ++mappedColorAttrib;
+            *mappedColorAttrib = color;
+            ++mappedColorAttrib;
         }
     }
+	mappedColorAttrib.unmap();
+
+    return *this;
 }
 
 void SegmentDisplay::draw()
 {
-    gl::draw(mMesh);
+    mBatch->draw();
 }
 

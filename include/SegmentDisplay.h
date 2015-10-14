@@ -16,21 +16,21 @@ using namespace std;
 
 class SegmentDisplay {
 public:
-    SegmentDisplay(uint length, const Vec2f position = Vec2f::zero(), float size = 1.0);
+    SegmentDisplay( uint digits, const ci::vec2 &position = ci::vec2(), float size = 1.0 );
 
-    void update(string s);
-    void update(string s, const Color on, const Color off);
     void setup();
+    SegmentDisplay& colors( const Color &on, const Color &off );
+    SegmentDisplay& display( string s );
     void draw();
 
 protected:
-    uint mLength;
-    Vec2f mPosition;
-    float mSize;
-    Vec2f mDimensions = Vec2f(18, 22) * mSize;
-    Color mOn = Color(1, 0, 0);
-    Color mOff = Color(0.25, 0, 0);
-    gl::VboMeshRef mMesh;
+    uint            mDigits; // Number of characters in display
+    ci::vec2        mPosition;
+    float           mScale;
+    ci::vec2        mDimensions;
+    ci::vec3        mColors[2];
+    gl::VboMeshRef  mMesh;
+    gl::BatchRef    mBatch;
 };
 
 #endif /* defined(__Segments__SegmentDisplay__) */

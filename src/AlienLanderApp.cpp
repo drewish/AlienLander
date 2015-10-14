@@ -39,7 +39,7 @@ public:
     uint mLines = 40;
 
     Ship mShip;
-    SegmentDisplay mDisplay = SegmentDisplay(16, ivec2(0, 0), 2);
+    SegmentDisplay mDisplay = SegmentDisplay(16, vec2(0, 0), 2);
 
     gl::VboMeshRef	mMaskMesh;
     gl::VboMeshRef	mLineMesh;
@@ -177,8 +177,10 @@ void AlienLanderApp::update()
     mShip.update();
 
     float fps = getAverageFps();
-    boost::format formatter("%+05f");
-    mDisplay.update("FPS " + (formatter % fps).str(), (fps > 30) ? mBlue : mRed, mDarkBlue);
+    boost::format formatter( "%+05f" );
+    mDisplay
+        .colors( fps > 30 ? mBlue : mRed, mDarkBlue )
+        .display( "FPS " + (formatter % fps).str() );
 
     float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
     // TODO: Need to change the focus point to remain parallel as we descend
