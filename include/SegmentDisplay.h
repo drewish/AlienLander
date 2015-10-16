@@ -27,6 +27,7 @@ protected:
     uint            mDigits; // Number of characters in display
     ci::vec2        mPosition;
     float           mScale;
+    float           mSlant;
     ci::vec2        mDimensions;
     ci::vec4        mColors[2];
     gl::VboMeshRef  mMesh;

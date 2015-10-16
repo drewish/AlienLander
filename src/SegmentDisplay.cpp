@@ -123,6 +123,7 @@ SegmentDisplay::SegmentDisplay(uint length, const vec2 &pos, float size)
     mColors[1] = vec4( 1, 0, 0, 1 );
     mColors[0] = vec4( 0.25, 0, 0, 1 );
     mDimensions = vec2( 16, 24 );
+    mSlant = -0.2f;
 }
 
 void SegmentDisplay::setup()
@@ -150,6 +151,13 @@ void SegmentDisplay::setup()
 	mMesh = gl::VboMesh::create( totalVertices, GL_TRIANGLE_STRIP, bufferLayout);
 
     mat3 transform = scale( mat3(), vec2( mScale ) );
+    if ( mSlant != 0.0) {
+        // We want to shear from the baseline of the text rather than the top so
+        // move the text up perform the shear, then put it back.
+        transform = translate( transform, vec2( 0, mDimensions.y ) );
+        transform = shearY( transform, mSlant );
+        transform = translate( transform, vec2( 0, -mDimensions.y ) );
+    }
     transform = translate( transform, mPosition );
 
     vector<vec3> verts;
