@@ -13,6 +13,7 @@ using namespace ci::geom;
 using namespace std;
 
 const uint SEGMENTS = 16;
+const uint VERTS_PER_SEGMENT = 6;
 // Awesome font stolen from http://www.msarnoff.org/alpha32/
 // The first 32, non-printable ASCII characters are omitted.
 const uint CHAR_OFFSET = 32;
@@ -119,63 +120,177 @@ int charPatterns[CHAR_LENGTH] = {
 SegmentDisplay::SegmentDisplay(uint length, const vec2 &pos, float size)
     : mDigits(length), mPosition(pos), mScale(size)
 {
-    mColors[1] = Color( 1, 0, 0 );
-    mColors[0] = Color( 0.25, 0, 0 );
-    mDimensions = vec2( 18, 22 ) * mScale;
+    mColors[1] = vec4( 1, 0, 0, 1 );
+    mColors[0] = vec4( 0.25, 0, 0, 1 );
+    mDimensions = vec2( 16, 24 );
 }
 
 void SegmentDisplay::setup()
 {
-    // coordinates of the points where segments intersect. we need to color
-    // segments individually so each one gets its own copies of the vertexes.
-    vec3 coords[9] = {
-        vec3(  6, 2,0 ) * mScale,
-        vec3( 12, 2,0 ) * mScale,
-        vec3( 18, 2,0 ) * mScale,
-        vec3( 16,12,0 ) * mScale,
-        vec3( 14,22,0 ) * mScale,
-        vec3(  8,22,0 ) * mScale,
-        vec3(  2,22,0 ) * mScale,
-        vec3(  4,12,0 ) * mScale,
-        vec3( 10,12,0 ) * mScale,
-    };
+    // Segments (order is A-P):
+    //
+    //   0-A-1-B-2
+    //   |\  |  /|
+    //   H K L M C
+    //   |  \|/  |
+    //   7-I-8-J-3
+    //   |  /|\  |
+    //   G P O N D
+    //   |/  |  \|
+    //   6-F-5-E-4
+    //
+    // We need to color segments individually so we don't share vertexes between
+    // them.
 
-    int totalVertices = 2 * SEGMENTS * mDigits;
+    int totalVertices = VERTS_PER_SEGMENT * SEGMENTS * mDigits;
 	vector<gl::VboMesh::Layout> bufferLayout = {
 		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
-		gl::VboMesh::Layout().usage( GL_DYNAMIC_DRAW ).attrib( geom::Attrib::COLOR, 3 )
+		gl::VboMesh::Layout().usage( GL_DYNAMIC_DRAW ).attrib( geom::Attrib::COLOR, 4 )
 	};
-	mMesh = gl::VboMesh::create( totalVertices, GL_LINES, bufferLayout);
+	mMesh = gl::VboMesh::create( totalVertices, GL_TRIANGLE_STRIP, bufferLayout);
 
-    vec3 offset = vec3(mPosition, 0);
+    mat3 transform = scale( mat3(), vec2( mScale ) );
+    transform = translate( transform, mPosition );
+
     vector<vec3> verts;
     for ( int i = 0; i < mDigits; i++ ) {
-        verts.push_back( coords[0] + offset ); verts.push_back( coords[1] + offset );
-        verts.push_back( coords[1] + offset ); verts.push_back( coords[2] + offset );
-        verts.push_back( coords[2] + offset ); verts.push_back( coords[3] + offset );
-        verts.push_back( coords[3] + offset ); verts.push_back( coords[4] + offset );
-        verts.push_back( coords[4] + offset ); verts.push_back( coords[5] + offset );
-        verts.push_back( coords[5] + offset ); verts.push_back( coords[6] + offset );
-        verts.push_back( coords[6] + offset ); verts.push_back( coords[7] + offset );
-        verts.push_back( coords[7] + offset ); verts.push_back( coords[0] + offset );
-        verts.push_back( coords[7] + offset ); verts.push_back( coords[8] + offset );
-        verts.push_back( coords[8] + offset ); verts.push_back( coords[3] + offset );
-        verts.push_back( coords[0] + offset ); verts.push_back( coords[8] + offset );
-        verts.push_back( coords[8] + offset ); verts.push_back( coords[1] + offset );
-        verts.push_back( coords[8] + offset ); verts.push_back( coords[2] + offset );
-        verts.push_back( coords[8] + offset ); verts.push_back( coords[4] + offset );
-        verts.push_back( coords[8] + offset ); verts.push_back( coords[5] + offset );
-        verts.push_back( coords[8] + offset ); verts.push_back( coords[6] + offset );
+        // Segment A
+        verts.push_back( transform * vec3(  1,  1, 1 ) );
+        verts.push_back( transform * vec3(  2,  2, 1 ) );
+        verts.push_back( transform * vec3(  2,  0, 1 ) );
+        verts.push_back( transform * vec3(  6,  2, 1 ) );
+        verts.push_back( transform * vec3(  6,  0, 1 ) );
+        verts.push_back( transform * vec3(  7,  1, 1 ) );
 
-        offset += vec3( mDimensions.x, 0, 0 );
+        // Segment B
+        verts.push_back( transform * vec3(  7,  1, 1 ) );
+        verts.push_back( transform * vec3(  8,  2, 1 ) );
+        verts.push_back( transform * vec3(  8,  0, 1 ) );
+        verts.push_back( transform * vec3( 12,  2, 1 ) );
+        verts.push_back( transform * vec3( 12,  0, 1 ) );
+        verts.push_back( transform * vec3( 13,  1, 1 ) );
+
+        // Segment C
+        verts.push_back( transform * vec3( 13,  1, 1 ) );
+        verts.push_back( transform * vec3( 12,  2, 1 ) );
+        verts.push_back( transform * vec3( 14,  2, 1 ) );
+        verts.push_back( transform * vec3( 12, 10, 1 ) );
+        verts.push_back( transform * vec3( 14, 10, 1 ) );
+        verts.push_back( transform * vec3( 13, 11, 1 ) );
+
+        // Segment D
+        verts.push_back( transform * vec3( 13, 11, 1 ) );
+        verts.push_back( transform * vec3( 12, 12, 1 ) );
+        verts.push_back( transform * vec3( 14, 12, 1 ) );
+        verts.push_back( transform * vec3( 12, 20, 1 ) );
+        verts.push_back( transform * vec3( 14, 20, 1 ) );
+        verts.push_back( transform * vec3( 13, 21, 1 ) );
+
+        // Segment E
+        verts.push_back( transform * vec3(  7, 21, 1 ) );
+        verts.push_back( transform * vec3(  8, 22, 1 ) );
+        verts.push_back( transform * vec3(  8, 20, 1 ) );
+        verts.push_back( transform * vec3( 12, 22, 1 ) );
+        verts.push_back( transform * vec3( 12, 20, 1 ) );
+        verts.push_back( transform * vec3( 13, 21, 1 ) );
+
+        // Segment F
+        verts.push_back( transform * vec3(  1, 21, 1 ) );
+        verts.push_back( transform * vec3(  2, 22, 1 ) );
+        verts.push_back( transform * vec3(  2, 20, 1 ) );
+        verts.push_back( transform * vec3(  6, 22, 1 ) );
+        verts.push_back( transform * vec3(  6, 20, 1 ) );
+        verts.push_back( transform * vec3(  7, 21, 1 ) );
+
+        // Segment G
+        verts.push_back( transform * vec3(  1, 11, 1 ) );
+        verts.push_back( transform * vec3(  0, 12, 1 ) );
+        verts.push_back( transform * vec3(  2, 12, 1 ) );
+        verts.push_back( transform * vec3(  0, 20, 1 ) );
+        verts.push_back( transform * vec3(  2, 20, 1 ) );
+        verts.push_back( transform * vec3(  1, 21, 1 ) );
+
+        // Segment H
+        verts.push_back( transform * vec3(  1,  1, 1 ) );
+        verts.push_back( transform * vec3(  0,  2, 1 ) );
+        verts.push_back( transform * vec3(  2,  2, 1 ) );
+        verts.push_back( transform * vec3(  0, 10, 1 ) );
+        verts.push_back( transform * vec3(  2, 10, 1 ) );
+        verts.push_back( transform * vec3(  1, 11, 1 ) );
+
+        // Segment I
+        verts.push_back( transform * vec3(  1, 11, 1 ) );
+        verts.push_back( transform * vec3(  2, 12, 1 ) );
+        verts.push_back( transform * vec3(  2, 10, 1 ) );
+        verts.push_back( transform * vec3(  6, 12, 1 ) );
+        verts.push_back( transform * vec3(  6, 10, 1 ) );
+        verts.push_back( transform * vec3(  7, 11, 1 ) );
+
+        // Segment J
+        verts.push_back( transform * vec3(  7, 11, 1 ) );
+        verts.push_back( transform * vec3(  8, 12, 1 ) );
+        verts.push_back( transform * vec3(  8, 10, 1 ) );
+        verts.push_back( transform * vec3( 12, 12, 1 ) );
+        verts.push_back( transform * vec3( 12, 10, 1 ) );
+        verts.push_back( transform * vec3( 13, 11, 1 ) );
+
+        // Segment K
+        verts.push_back( transform * vec3( 2.0,  2.0, 1 ) );
+        verts.push_back( transform * vec3( 2.0,  4.3, 1 ) );
+        verts.push_back( transform * vec3( 3.0,  2.0, 1 ) );
+        verts.push_back( transform * vec3( 5.3, 10.0, 1 ) );
+        verts.push_back( transform * vec3( 6.0,  7.2, 1 ) );
+        verts.push_back( transform * vec3( 6.0, 10.0, 1 ) );
+
+        // Segment L
+        verts.push_back( transform * vec3(  7,  1, 1 ) );
+        verts.push_back( transform * vec3(  6,  2, 1 ) );
+        verts.push_back( transform * vec3(  8,  2, 1 ) );
+        verts.push_back( transform * vec3(  6, 10, 1 ) );
+        verts.push_back( transform * vec3(  8, 10, 1 ) );
+        verts.push_back( transform * vec3(  7, 11, 1 ) );
+
+        // Segment M
+        verts.push_back( transform * vec3(  8.0, 10.0, 1 ) );
+        verts.push_back( transform * vec3(  8.7, 10.0, 1 ) );
+        verts.push_back( transform * vec3(  8.0,  7.2, 1 ) );
+        verts.push_back( transform * vec3( 12.0,  4.3, 1 ) );
+        verts.push_back( transform * vec3( 11.0,  2.0, 1 ) );
+        verts.push_back( transform * vec3( 12.0,  2.0, 1 ) );
+
+        // Segment N
+        verts.push_back( transform * vec3(  8.0, 12.0, 1 ) );
+        verts.push_back( transform * vec3(  8.0, 14.8, 1 ) );
+        verts.push_back( transform * vec3(  8.7, 12.0, 1 ) );
+        verts.push_back( transform * vec3( 11.0, 20.0, 1 ) );
+        verts.push_back( transform * vec3( 12.0, 17.7, 1 ) );
+        verts.push_back( transform * vec3( 12.0, 20.0, 1 ) );
+
+        // Segment O
+        verts.push_back( transform * vec3(  7, 11, 1 ) );
+        verts.push_back( transform * vec3(  6, 12, 1 ) );
+        verts.push_back( transform * vec3(  8, 12, 1 ) );
+        verts.push_back( transform * vec3(  6, 20, 1 ) );
+        verts.push_back( transform * vec3(  8, 20, 1 ) );
+        verts.push_back( transform * vec3(  7, 21, 1 ) );
+
+        // Segment P
+        verts.push_back( transform * vec3( 2.0, 20.0, 1 ) );
+        verts.push_back( transform * vec3( 3.0, 20.0, 1 ) );
+        verts.push_back( transform * vec3( 2.0, 17.7, 1 ) );
+        verts.push_back( transform * vec3( 6.0, 14.8, 1 ) );
+        verts.push_back( transform * vec3( 5.3, 12.0, 1 ) );
+        verts.push_back( transform * vec3( 6.0, 12.0, 1 ) );
+
+        transform = translate( transform, vec2( mDimensions.x, 0 ) );
     }
     mMesh->bufferAttrib( geom::Attrib::POSITION, verts );
 
-    gl::ScopedLineWidth lineScope(2);
-    mBatch = gl::Batch::create( mMesh, gl::getStockShader( gl::ShaderDef().color() ) );
+    auto shader = gl::getStockShader( gl::ShaderDef().color() );
+    mBatch = gl::Batch::create( mMesh, shader );
 }
 
-SegmentDisplay& SegmentDisplay::colors( const Color &on, const Color &off )
+SegmentDisplay& SegmentDisplay::colors( const ColorA &on, const ColorA &off )
 {
     mColors[1] = on;
     mColors[0] = off;
@@ -188,22 +303,22 @@ SegmentDisplay& SegmentDisplay::display( string s )
     char c;
     int len = s.length();
 
-	auto mappedColorAttrib = mMesh->mapAttrib3f( geom::Attrib::COLOR, false );
-    for (int j = 0; j < mDigits; ++j) {
+	auto mappedColorAttrib = mMesh->mapAttrib4f( geom::Attrib::COLOR, false );
+    for ( int j = 0; j < mDigits; ++j ) {
         c = ' ';
         // Make sure we're don't go off the end of the string and that the
         // character is one in our table.
-        if (j < len && s[j] > CHAR_OFFSET && s[j] < CHAR_OFFSET + CHAR_LENGTH) {
+        if ( j < len && s[j] > CHAR_OFFSET && s[j] < CHAR_OFFSET + CHAR_LENGTH ) {
             c = s[j];
         }
 
         int pattern = charPatterns[(int)c - CHAR_OFFSET];
-        for ( int i = 0; i < SEGMENTS; i++ ) {
-            vec3 color = (pattern & (1 << i)) ? mColors[1] : mColors[0];
-            *mappedColorAttrib = color;
-            ++mappedColorAttrib;
-            *mappedColorAttrib = color;
-            ++mappedColorAttrib;
+        for ( uint i = 0; i < SEGMENTS; ++i ) {
+            vec4 color = (pattern & (1 << i)) ? mColors[1] : mColors[0];
+            for ( uint vert = 0; vert < VERTS_PER_SEGMENT; ++vert ) {
+                *mappedColorAttrib = vec4(color);
+                ++mappedColorAttrib;
+            }
         }
     }
 	mappedColorAttrib.unmap();
@@ -213,6 +328,8 @@ SegmentDisplay& SegmentDisplay::display( string s )
 
 void SegmentDisplay::draw()
 {
-    mBatch->draw();
+    for ( uint start = 0; start < mDigits * SEGMENTS * VERTS_PER_SEGMENT; start += VERTS_PER_SEGMENT ) {
+        mBatch->draw( start, VERTS_PER_SEGMENT );
+    }
 }
 

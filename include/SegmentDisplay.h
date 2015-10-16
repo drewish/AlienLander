@@ -19,7 +19,7 @@ public:
     SegmentDisplay( uint digits, const ci::vec2 &position = ci::vec2(), float size = 1.0 );
 
     void setup();
-    SegmentDisplay& colors( const Color &on, const Color &off );
+    SegmentDisplay& colors( const ColorA &on, const ColorA &off );
     SegmentDisplay& display( string s );
     void draw();
 
@@ -28,7 +28,7 @@ protected:
     ci::vec2        mPosition;
     float           mScale;
     ci::vec2        mDimensions;
-    ci::vec3        mColors[2];
+    ci::vec4        mColors[2];
     gl::VboMeshRef  mMesh;
     gl::BatchRef    mBatch;
 };

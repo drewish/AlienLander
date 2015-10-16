@@ -39,7 +39,7 @@ public:
     uint mLines = 40;
 
     Ship mShip;
-    SegmentDisplay mDisplay = SegmentDisplay(16, vec2(0, 0), 2);
+    SegmentDisplay mDisplay = SegmentDisplay(16, vec2(5), 2);
 
     gl::VboMeshRef	mMaskMesh;
     gl::VboMeshRef	mLineMesh;
@@ -179,7 +179,7 @@ void AlienLanderApp::update()
     float fps = getAverageFps();
     boost::format formatter( "%+05f" );
     mDisplay
-        .colors( fps > 30 ? mBlue : mRed, mDarkBlue )
+        .colors( ColorA( fps > 30 ? mBlue : mRed, 0.8 ), ColorA( mDarkBlue, 0.8 ) )
         .display( "FPS " + (formatter % fps).str() );
 
     float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
@@ -241,8 +241,6 @@ void AlienLanderApp::draw()
 
     gl::popMatrices();
 
-
-    gl::lineWidth(2);
     mDisplay.draw();
 }
 
