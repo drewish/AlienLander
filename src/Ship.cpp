@@ -20,6 +20,7 @@ void Ship::update()
 
     // x/y thrusters should be summed up into a vector then apply that
     // considering the ship's heading (stored in mPos.w)
+// TODO document w format: deg? rad? and range: 0-?
     mAcc += vec4(sin(mPos.w) * mThrusters.x, cos(mPos.w) * mThrusters.y, mThrusters.z, mThrusters.w);
 
     // FIXME:

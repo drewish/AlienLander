@@ -41,11 +41,15 @@ public:
     Ship mShip;
     SegmentDisplay mDisplay = SegmentDisplay(16, vec2(5), 2);
 
+    gl::BatchRef    mLineBatch;
+    gl::BatchRef    mMaskBatch;
+
     gl::VboMeshRef	mMaskMesh;
     gl::VboMeshRef	mLineMesh;
     gl::TextureRef	mTexture;
     gl::GlslProgRef	mShader;
     CameraPersp     mCamera;
+    mat4            mTextureMatrix;
 
     Color mBlack = Color::black();
     Color mBlue = Color8u(66, 161, 235);
@@ -64,12 +68,16 @@ void AlienLanderApp::setup()
 {
     try {
         mTexture = gl::Texture::create( loadImage( loadResource( RES_US_SQUARE ) ) );
+        mTexture->bind( 0 );
+
     }
     catch( ... ) {
         console() << "unable to load the texture file!" << std::endl;
     }
     mTexture->setWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
+
+//    mShader = gl::getStockShader( gl::ShaderDef().texture() );
     try {
         mShader = ci::gl::GlslProg::create(
             ci::app::loadResource( RES_VERT ),
@@ -92,47 +100,32 @@ void AlienLanderApp::setup()
 
 //    setFullScreen( true );
     setFrameRate(60);
-    gl::enableVerticalSync(false);
+    gl::enableVerticalSync(true);
 
     mCamera.setPerspective( 40.0f, 1.0f, 0.5f, 3.0f );
 }
 
 void AlienLanderApp::buildMeshes()
 {
-    uint totalVertices = mPoints * mLines;
-    uint totalIndicies = mPoints * mLines;
-    gl::VboMesh::Layout layout;
-    layout.setStaticIndices();
-    layout.setStaticPositions();
-    layout.setStaticTexCoords2d();
-    mLineMesh = gl::VboMesh::create( totalVertices, totalIndicies, layout, GL_LINE_STRIP );
-
-    vector<uint32_t> indices;
     vector<vec3> vertCoords;
     vector<vec2> texCoords;
+
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
             vertCoords.push_back( vec3( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5) );
             texCoords.push_back( vec2( x / (float)mPoints, z / (float)mLines ) );
-            indices.push_back( z * mPoints + (x + 0) );
         }
     }
-
-    mLineMesh->bufferIndices( indices );
-    mLineMesh->bufferPositions( vertCoords );
-    mLineMesh->bufferTexCoords2d( 0, texCoords );
+	mLineMesh = gl::VboMesh::create( vertCoords.size(), GL_LINE_STRIP, {
+		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
+		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::TEX_COORD_0, 2 ),
+	});
+    mLineMesh->bufferAttrib( geom::Attrib::POSITION, vertCoords );
+    mLineMesh->bufferAttrib( geom::Attrib::TEX_COORD_0, texCoords );
+    mLineBatch = gl::Batch::create( mLineMesh, mShader );
 
     // * * *
 
-    totalVertices = mLines * mPoints * 2;
-    totalIndicies = mLines * mPoints * 2;
-    gl::VboMesh::Layout maskLayout;
-    maskLayout.setStaticIndices();
-    maskLayout.setStaticPositions();
-    maskLayout.setStaticTexCoords2d();
-    mMaskMesh = gl::VboMesh::create( totalVertices, totalIndicies, maskLayout, GL_TRIANGLE_STRIP );
-
-    indices.clear();
     vertCoords.clear();
     texCoords.clear();
 
@@ -151,15 +144,15 @@ void AlienLanderApp::buildMeshes()
             texCoords.push_back( coord );
             texCoords.push_back( coord );
         }
-        for( uint x = 1; x <= mPoints * 2; x += 2 ) {
-            indices.push_back( z * 2 * mPoints + x - 1 );
-            indices.push_back( z * 2 * mPoints + x - 0 );
-        }
     }
+	mMaskMesh = gl::VboMesh::create( vertCoords.size(), GL_TRIANGLE_STRIP, {
+		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
+		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::TEX_COORD_0, 2 ),
+	});
+    mMaskMesh->bufferAttrib( geom::Attrib::POSITION, vertCoords );
+    mMaskMesh->bufferAttrib( geom::Attrib::TEX_COORD_0, texCoords );
 
-    mMaskMesh->bufferIndices( indices );
-    mMaskMesh->bufferPositions( vertCoords );
-    mMaskMesh->bufferTexCoords2d( 0, texCoords );
+    mMaskBatch = gl::Batch::create( mMaskMesh, mShader );
 }
 
 void AlienLanderApp::resize()
@@ -176,6 +169,16 @@ void AlienLanderApp::update()
 {
     mShip.update();
 
+    // TODO Need to figure our what to do with the scale... should probably
+    // affect the distance to the points rather than being handled by moving
+    // the camera...
+    float scale = mShip.mPos.z;
+    mTextureMatrix = glm::translate( vec3( 0.5, 0.5, 0 ) );
+    mTextureMatrix = glm::rotate( mTextureMatrix, mShip.mPos.w, vec3( 0, 0, 1 ) );
+    mTextureMatrix = glm::scale( mTextureMatrix, vec3( scale, scale, 1.0f ) );
+    mTextureMatrix = glm::translate( mTextureMatrix, vec3( mShip.mPos.x, mShip.mPos.y, 0 ) );
+    mTextureMatrix = glm::translate( mTextureMatrix, vec3( -0.5, -0.5, 0 ) );
+
     float fps = getAverageFps();
     boost::format formatter( "%+05f" );
     mDisplay
@@ -189,57 +192,33 @@ void AlienLanderApp::update()
 
 void AlienLanderApp::draw()
 {
-    gl::pushMatrices();
 
-    gl::enableDepthRead( true );
-    gl::enableDepthWrite( true );
     gl::clear( mBlack, true );
 
-    gl::setMatrices( mCamera );
+    {
+        gl::ScopedMatrices matrixScope;
+        gl::setMatrices( mCamera );
 
-    gl::ScopedLineWidth lineWidthScope(1);
-    gl::ScopedTextureBind textureScope( mTexture,0 );
+        mShader->uniform( "textureMatrix", mTextureMatrix );
 
-    gl::ScopedGlslProg glslScope( mShader );
-    mShader->uniform( "tex0", 0 );
-    mShader->uniform( "zoom", 0.5f );// mZoom );
+        uint indiciesInLine = mPoints;
+        uint indiciesInMask = mPoints * 2;
+        // { int i = (getElapsedFrames()) % mLines; // stepping
+        // for (int i = mLines - 1; i >= 0; --i) { // front to back
+        for (int i = 0; i <= mLines; ++i) { // back to front
+            gl::color( mBlue );
+            mLineBatch->draw( i * indiciesInLine, indiciesInLine);
 
-    // Transform the height map via the texture matrix
-    glMatrixMode( GL_TEXTURE );
-    glLoadIdentity();
+            gl::color( Color::gray( i % 2 == 1 ? 0.5 : 0.25) );
+            mMaskBatch->draw( i * indiciesInMask, indiciesInMask);
+        }
 
-    float scale = mShip.mPos.z;
-    gl::translate( 0.5, 0.5 );
-    gl::rotate( mShip.mPos.w * 180 / M_PI );
-    gl::scale( scale, scale );
-    gl::translate( mShip.mPos.xy() );
-    gl::translate( -0.5, -0.5 );
-
-    uint indiciesInLine = mPoints;
-    uint indiciesInMask = mPoints * 2;
-    // Draw front to back to allow the depth buffer to do its job.
-    for (int i = mLines - 1; i >= 0; --i) {
-        gl::color( mBlue );
-        gl::drawRange( mLineMesh, i * indiciesInLine, indiciesInLine);
-
-        gl::color( Color::gray(0.1) );
-        gl::drawRange( mMaskMesh, i * indiciesInMask, indiciesInMask);
+        // FIXME: Direction of rotation seems backwards
+//        // Vector pointing north
+//        gl::color( mRed );
+//        vec2 vec = vec2(cos(mShip.mPos.w), sin(mShip.mPos.w)) / vec2(40.0);
+//        gl::drawVector(vec3(0.0,1/10.0,0.0), vec3(vec.x,1/10.0, vec.y), 1/20.0, 1/100.0);
     }
-
-    glLoadIdentity();
-    glMatrixMode( GL_MODELVIEW );
-
-//    // Vector pointing north
-//    gl::lineWidth(2);
-//    gl::color( mRed );
-//    vec2 vec = vec2(cos(mShip.mPos.w), sin(mShip.mPos.w)) / 40;
-//    gl::drawVector(vec3(0.0,1 / 10.0,0.0), vec3(vec.x, 1 / 10.0, vec.y), 1/20.0, 1/100.0);
-
-    gl::disableDepthRead( );
-    gl::disableDepthWrite( );
-
-
-    gl::popMatrices();
 
     mDisplay.draw();
 }

@@ -167,9 +167,9 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				5F6D634E1A53193E001004EC /* frag.glsl */,
 				5F6D634F1A53193E001004EC /* usa-square.png */,
 				5F6D63501A53193E001004EC /* vert.glsl */,
+				5F6D634E1A53193E001004EC /* frag.glsl */,
 				49BFFDA01A08A727009085F3 /* moon-big.png */,
 				49BFFDA11A08A727009085F3 /* moon.png */,
 				49BFFD9E1A08A24E009085F3 /* usa-full.png */,

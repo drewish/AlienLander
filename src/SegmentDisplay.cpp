@@ -306,6 +306,8 @@ SegmentDisplay& SegmentDisplay::colors( const ColorA &on, const ColorA &off )
     return *this;
 }
 
+// TODO: would be good to store the string and only update the VBO when the
+// string changes.
 SegmentDisplay& SegmentDisplay::display( string s )
 {
     char c;
