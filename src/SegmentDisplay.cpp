@@ -128,17 +128,17 @@ SegmentDisplay::SegmentDisplay(uint length, const vec2 &pos, float size)
 
 void SegmentDisplay::setup()
 {
-    // Segments (order is A-P):
+    // Segments (order is 0-F):
     //
-    //   0-A-1-B-2
+    //   *-0-*-1-*
     //   |\  |  /|
-    //   H K L M C
+    //   7 A B C 2
     //   |  \|/  |
-    //   7-I-8-J-3
+    //   *-8-*-9-*
     //   |  /|\  |
-    //   G P O N D
+    //   6 F E D 3
     //   |/  |  \|
-    //   6-F-5-E-4
+    //   *-5-*-4-*
     //
     // We need to color segments individually so we don't share vertexes between
     // them.
@@ -162,7 +162,7 @@ void SegmentDisplay::setup()
 
     vector<vec3> verts;
     for ( int i = 0; i < mDigits; i++ ) {
-        // Segment A
+        // Segment 0
         verts.push_back( transform * vec3(  1,  1, 1 ) );
         verts.push_back( transform * vec3(  2,  2, 1 ) );
         verts.push_back( transform * vec3(  2,  0, 1 ) );
@@ -170,7 +170,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3(  6,  0, 1 ) );
         verts.push_back( transform * vec3(  7,  1, 1 ) );
 
-        // Segment B
+        // Segment 1 (Segment 0 + vec(6, 0))
         verts.push_back( transform * vec3(  7,  1, 1 ) );
         verts.push_back( transform * vec3(  8,  2, 1 ) );
         verts.push_back( transform * vec3(  8,  0, 1 ) );
@@ -178,7 +178,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 12,  0, 1 ) );
         verts.push_back( transform * vec3( 13,  1, 1 ) );
 
-        // Segment C
+        // Segment 2
         verts.push_back( transform * vec3( 13,  1, 1 ) );
         verts.push_back( transform * vec3( 12,  2, 1 ) );
         verts.push_back( transform * vec3( 14,  2, 1 ) );
@@ -186,7 +186,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 14, 10, 1 ) );
         verts.push_back( transform * vec3( 13, 11, 1 ) );
 
-        // Segment D
+        // Segment 3 (Segment 2 + vec(0, 10))
         verts.push_back( transform * vec3( 13, 11, 1 ) );
         verts.push_back( transform * vec3( 12, 12, 1 ) );
         verts.push_back( transform * vec3( 14, 12, 1 ) );
@@ -194,7 +194,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 14, 20, 1 ) );
         verts.push_back( transform * vec3( 13, 21, 1 ) );
 
-        // Segment E
+        // Segment 4 (Segment 0 + vec(6, 20))
         verts.push_back( transform * vec3(  7, 21, 1 ) );
         verts.push_back( transform * vec3(  8, 22, 1 ) );
         verts.push_back( transform * vec3(  8, 20, 1 ) );
@@ -202,7 +202,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 12, 20, 1 ) );
         verts.push_back( transform * vec3( 13, 21, 1 ) );
 
-        // Segment F
+        // Segment 5 (Segment 0 + vec(0, 20))
         verts.push_back( transform * vec3(  1, 21, 1 ) );
         verts.push_back( transform * vec3(  2, 22, 1 ) );
         verts.push_back( transform * vec3(  2, 20, 1 ) );
@@ -210,7 +210,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3(  6, 20, 1 ) );
         verts.push_back( transform * vec3(  7, 21, 1 ) );
 
-        // Segment G
+        // Segment 6 (Segment 2 + vec(-12, -10))
         verts.push_back( transform * vec3(  1, 11, 1 ) );
         verts.push_back( transform * vec3(  0, 12, 1 ) );
         verts.push_back( transform * vec3(  2, 12, 1 ) );
@@ -218,7 +218,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3(  2, 20, 1 ) );
         verts.push_back( transform * vec3(  1, 21, 1 ) );
 
-        // Segment H
+        // Segment 7 (Segment 2 + vec(-12, 0)
         verts.push_back( transform * vec3(  1,  1, 1 ) );
         verts.push_back( transform * vec3(  0,  2, 1 ) );
         verts.push_back( transform * vec3(  2,  2, 1 ) );
@@ -226,7 +226,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3(  2, 10, 1 ) );
         verts.push_back( transform * vec3(  1, 11, 1 ) );
 
-        // Segment I
+        // Segment 8 (Segment 0 + vec(0, 10))
         verts.push_back( transform * vec3(  1, 11, 1 ) );
         verts.push_back( transform * vec3(  2, 12, 1 ) );
         verts.push_back( transform * vec3(  2, 10, 1 ) );
@@ -234,7 +234,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3(  6, 10, 1 ) );
         verts.push_back( transform * vec3(  7, 11, 1 ) );
 
-        // Segment J
+        // Segment 9 (Segment 0 + vec(6, 10))
         verts.push_back( transform * vec3(  7, 11, 1 ) );
         verts.push_back( transform * vec3(  8, 12, 1 ) );
         verts.push_back( transform * vec3(  8, 10, 1 ) );
@@ -242,7 +242,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 12, 10, 1 ) );
         verts.push_back( transform * vec3( 13, 11, 1 ) );
 
-        // Segment K
+        // Segment A
         verts.push_back( transform * vec3( 2.0,  2.0, 1 ) );
         verts.push_back( transform * vec3( 2.0,  4.3, 1 ) );
         verts.push_back( transform * vec3( 3.0,  2.0, 1 ) );
@@ -250,7 +250,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 6.0,  7.2, 1 ) );
         verts.push_back( transform * vec3( 6.0, 10.0, 1 ) );
 
-        // Segment L
+        // Segment B (Segment 2 + vec(-6, 0))
         verts.push_back( transform * vec3(  7,  1, 1 ) );
         verts.push_back( transform * vec3(  6,  2, 1 ) );
         verts.push_back( transform * vec3(  8,  2, 1 ) );
@@ -258,7 +258,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3(  8, 10, 1 ) );
         verts.push_back( transform * vec3(  7, 11, 1 ) );
 
-        // Segment M
+        // Segment C
         verts.push_back( transform * vec3(  8.0, 10.0, 1 ) );
         verts.push_back( transform * vec3(  8.7, 10.0, 1 ) );
         verts.push_back( transform * vec3(  8.0,  7.2, 1 ) );
@@ -266,7 +266,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 11.0,  2.0, 1 ) );
         verts.push_back( transform * vec3( 12.0,  2.0, 1 ) );
 
-        // Segment N
+        // Segment D
         verts.push_back( transform * vec3(  8.0, 12.0, 1 ) );
         verts.push_back( transform * vec3(  8.0, 14.8, 1 ) );
         verts.push_back( transform * vec3(  8.7, 12.0, 1 ) );
@@ -274,7 +274,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3( 12.0, 17.7, 1 ) );
         verts.push_back( transform * vec3( 12.0, 20.0, 1 ) );
 
-        // Segment O
+        // Segment E (Segment 2 + vec(-6, 10))
         verts.push_back( transform * vec3(  7, 11, 1 ) );
         verts.push_back( transform * vec3(  6, 12, 1 ) );
         verts.push_back( transform * vec3(  8, 12, 1 ) );
@@ -282,7 +282,7 @@ void SegmentDisplay::setup()
         verts.push_back( transform * vec3(  8, 20, 1 ) );
         verts.push_back( transform * vec3(  7, 21, 1 ) );
 
-        // Segment P
+        // Segment F
         verts.push_back( transform * vec3( 2.0, 20.0, 1 ) );
         verts.push_back( transform * vec3( 3.0, 20.0, 1 ) );
         verts.push_back( transform * vec3( 2.0, 17.7, 1 ) );
