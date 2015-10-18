@@ -150,15 +150,16 @@ void SegmentDisplay::setup()
 	};
 	mMesh = gl::VboMesh::create( totalVertices, GL_TRIANGLE_STRIP, bufferLayout);
 
-    mat3 transform = scale( mat3(), vec2( mScale ) );
+    mat3 transform = translate( mat3(), mPosition );
+    transform = scale( transform, vec2( mScale ) );
     if ( mSlant != 0.0) {
         // We want to shear from the baseline of the text rather than the top so
         // move the text up perform the shear, then put it back.
-        transform = translate( transform, vec2( 0, mDimensions.y ) );
+        vec2 offset = vec2( 0, mDimensions.y );
+        transform = translate( transform, offset );
         transform = shearY( transform, mSlant );
-        transform = translate( transform, vec2( 0, -mDimensions.y ) );
+        transform = translate( transform, -offset );
     }
-    transform = translate( transform, mPosition );
 
     vector<vec3> verts;
     for ( int i = 0; i < mDigits; i++ ) {
@@ -310,12 +311,11 @@ SegmentDisplay& SegmentDisplay::colors( const ColorA &on, const ColorA &off )
 // string changes.
 SegmentDisplay& SegmentDisplay::display( string s )
 {
-    char c;
     int len = s.length();
 
 	auto mappedColorAttrib = mMesh->mapAttrib4f( geom::Attrib::COLOR, false );
     for ( int j = 0; j < mDigits; ++j ) {
-        c = ' ';
+        char c = ' ';
         // Make sure we're don't go off the end of the string and that the
         // character is one in our table.
         if ( j < len && s[j] > CHAR_OFFSET && s[j] < CHAR_OFFSET + CHAR_LENGTH ) {
