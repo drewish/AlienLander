@@ -16,12 +16,22 @@ using namespace std;
 
 class SegmentDisplay {
 public:
-    SegmentDisplay( uint digits, const ci::vec2 &position = ci::vec2(), float size = 1.0 );
+    SegmentDisplay( uint digits );
 
-    void setup();
+    // Chain-able configuration methods
+    SegmentDisplay& position( const vec2 &p );
+    SegmentDisplay& below( const SegmentDisplay &other );
+    SegmentDisplay& rightOf( const SegmentDisplay &other );
+    SegmentDisplay& scale( const float &s );
     SegmentDisplay& colors( const ColorA &on, const ColorA &off );
     SegmentDisplay& display( string s );
-    void draw();
+
+    void setup();
+    void draw() const;
+
+    const vec2 position() const { return mPosition; }
+    float height() const { return mDimensions.y * mScale; }
+    float width() const { return ( mDimensions.x * mDigits ) * mScale; }
 
 protected:
     uint            mDigits; // Number of characters in display

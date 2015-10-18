@@ -39,7 +39,7 @@ public:
     uint mLines = 40;
 
     Ship mShip;
-    SegmentDisplay mDisplay = SegmentDisplay(16, vec2(5), 2);
+    vector<SegmentDisplay> mDisplays;
 
     gl::BatchRef    mLineBatch;
     gl::BatchRef    mMaskBatch;
@@ -96,7 +96,17 @@ void AlienLanderApp::setup()
     buildMeshes();
 
     mShip.setup();
-    mDisplay.setup();
+
+    uint digits = 14;
+    mDisplays.push_back( SegmentDisplay(10).position( vec2( 5 ) ).scale( 2 ) );
+    mDisplays.push_back( SegmentDisplay(10).rightOf( mDisplays.back() ) );
+    mDisplays.push_back( SegmentDisplay(35).below( mDisplays.front() ) );
+    mDisplays.push_back( SegmentDisplay(35).below( mDisplays.back() ) );
+
+    for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
+        display->colors( ColorA( mBlue, 0.8 ), ColorA( mDarkBlue, 0.8 ) );
+        display->setup();
+    }
 
 //    setFullScreen( true );
     setFrameRate(60);
@@ -179,11 +189,21 @@ void AlienLanderApp::update()
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( mShip.mPos.x, mShip.mPos.y, 0 ) );
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( -0.5, -0.5, 0 ) );
 
+    vec4 vel = mShip.mVel;
+    vec4 acc = mShip.mAcc;
     float fps = getAverageFps();
-    boost::format formatter( "%+05f" );
-    mDisplay
-        .colors( ColorA( fps > 30 ? mBlue : mRed, 0.8 ), ColorA( mDarkBlue, 0.8 ) )
-        .display( "FPS " + (formatter % fps).str() );
+    boost::format zeroToOne( "%+07.5f" );
+    boost::format shortForm( "%+08.4f" );
+    mDisplays[0].display( "ALT " + (zeroToOne % mShip.mPos.z).str() );
+    mDisplays[1]
+        .display( "FPS " + (shortForm % fps).str() )
+        .colors( ColorA( fps < 50 ? mRed : mBlue, 0.8 ), ColorA( mDarkBlue, 0.8 ) );
+    mDisplays[2].display( " X " + (shortForm % vel.x).str()
+        + "  Y " + (shortForm % vel.y).str()
+        + "  R " + (shortForm % vel.w).str() );
+    mDisplays[3].display( "dX " + (shortForm % acc.x).str()
+        + " dY " + (shortForm % acc.y).str()
+        + " dR " + (shortForm % acc.w).str() );
 
     float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
     // TODO: Need to change the focus point to remain parallel as we descend
@@ -220,7 +240,9 @@ void AlienLanderApp::draw()
 //        gl::drawVector(vec3(0.0,1/10.0,0.0), vec3(vec.x,1/10.0, vec.y), 1/20.0, 1/100.0);
     }
 
-    mDisplay.draw();
+    for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
+        display->draw();
+    }
 }
 
 

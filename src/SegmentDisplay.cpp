@@ -117,13 +117,46 @@ int charPatterns[CHAR_LENGTH] = {
     0x0000,  /* DEL */
 };
 
-SegmentDisplay::SegmentDisplay(uint length, const vec2 &pos, float size)
-    : mDigits(length), mPosition(pos), mScale(size)
+SegmentDisplay::SegmentDisplay(uint length)
+    : mDigits(length)
 {
+    mPosition = ci::vec2();
+    mScale = 1.0;
     mColors[1] = vec4( 1, 0, 0, 1 );
     mColors[0] = vec4( 0.25, 0, 0, 1 );
     mDimensions = vec2( 16, 24 );
     mSlant = -0.2f;
+}
+
+SegmentDisplay& SegmentDisplay::position( const vec2 &pos )
+{
+    mPosition = pos;
+    return *this;
+}
+
+SegmentDisplay& SegmentDisplay::below( const SegmentDisplay &other )
+{
+    mPosition = other.mPosition + vec2( 0, other.height() );
+    return *this;
+}
+
+SegmentDisplay& SegmentDisplay::rightOf( const SegmentDisplay &other )
+{
+    mPosition = other.mPosition + vec2( other.width(), other.height() - height() );
+    return *this;
+}
+
+SegmentDisplay& SegmentDisplay::scale( const float &s )
+{
+    mScale = s;
+    return *this;
+}
+
+SegmentDisplay& SegmentDisplay::colors( const ColorA &on, const ColorA &off )
+{
+    mColors[1] = on;
+    mColors[0] = off;
+    return *this;
 }
 
 void SegmentDisplay::setup()
@@ -140,7 +173,7 @@ void SegmentDisplay::setup()
     //   |/  |  \|
     //   *-5-*-4-*
     //
-    // We need to color segments individually so we don't share vertexes between
+    // We need to color segments individually so we can't share vertexes between
     // them.
 
     int totalVertices = VERTS_PER_SEGMENT * SEGMENTS * mDigits;
@@ -150,8 +183,7 @@ void SegmentDisplay::setup()
 	};
 	mMesh = gl::VboMesh::create( totalVertices, GL_TRIANGLE_STRIP, bufferLayout);
 
-    mat3 transform = translate( mat3(), mPosition );
-    transform = scale( transform, vec2( mScale ) );
+    mat3 transform = mat3();
     if ( mSlant != 0.0) {
         // We want to shear from the baseline of the text rather than the top so
         // move the text up perform the shear, then put it back.
@@ -299,14 +331,6 @@ void SegmentDisplay::setup()
     mBatch = gl::Batch::create( mMesh, shader );
 }
 
-SegmentDisplay& SegmentDisplay::colors( const ColorA &on, const ColorA &off )
-{
-    mColors[1] = on;
-    mColors[0] = off;
-
-    return *this;
-}
-
 // TODO: would be good to store the string and only update the VBO when the
 // string changes.
 SegmentDisplay& SegmentDisplay::display( string s )
@@ -336,8 +360,12 @@ SegmentDisplay& SegmentDisplay::display( string s )
     return *this;
 }
 
-void SegmentDisplay::draw()
+void SegmentDisplay::draw() const
 {
+    gl::ScopedModelMatrix matrixScope;
+    gl::translate( mPosition );
+    gl::scale( vec2( mScale ) );
+
     for ( uint start = 0; start < mDigits * SEGMENTS * VERTS_PER_SEGMENT; start += VERTS_PER_SEGMENT ) {
         mBatch->draw( start, VERTS_PER_SEGMENT );
     }
