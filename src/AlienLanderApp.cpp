@@ -111,33 +111,26 @@ void AlienLanderApp::setup()
 //    setFullScreen( true );
     setFrameRate(60);
     gl::enableVerticalSync(true);
-
-    mCamera.setPerspective( 40.0f, 1.0f, 0.5f, 3.0f );
 }
 
 void AlienLanderApp::buildMeshes()
 {
     vector<vec3> vertCoords;
-    vector<vec2> texCoords;
 
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
-            vertCoords.push_back( vec3( x / (float)mPoints - 0.5, 1, z / (float)mLines - 0.5) );
-            texCoords.push_back( vec2( x / (float)mPoints, z / (float)mLines ) );
+            vertCoords.push_back( vec3( x / (float)mPoints, 1, z / (float)mLines ) );
         }
     }
 	mLineMesh = gl::VboMesh::create( vertCoords.size(), GL_LINE_STRIP, {
 		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
-		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::TEX_COORD_0, 2 ),
 	});
     mLineMesh->bufferAttrib( geom::Attrib::POSITION, vertCoords );
-    mLineMesh->bufferAttrib( geom::Attrib::TEX_COORD_0, texCoords );
     mLineBatch = gl::Batch::create( mLineMesh, mShader );
 
     // * * *
 
     vertCoords.clear();
-    texCoords.clear();
 
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
@@ -146,22 +139,16 @@ void AlienLanderApp::buildMeshes()
             // a strip: 1 1 1  that will become: 2 9 3
             //          |\|\|                    |\|\|
             //          0 0 0                    0 0 0
-            vec3 vert = vec3( x / (float)mPoints - 0.5, 1, z / (float)mLines - 0.5);
+            vec3 vert = vec3( x / (float)mPoints, 1, z / (float)mLines );
             vertCoords.push_back(vert);
             vert.y = 0.0;
             vertCoords.push_back(vert);
-
-            vec2 coord = vec2( x / (float)mPoints, z / (float)mLines );
-            texCoords.push_back( coord );
-            texCoords.push_back( coord );
         }
     }
 	mMaskMesh = gl::VboMesh::create( vertCoords.size(), GL_TRIANGLE_STRIP, {
 		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
-		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::TEX_COORD_0, 2 ),
 	});
     mMaskMesh->bufferAttrib( geom::Attrib::POSITION, vertCoords );
-    mMaskMesh->bufferAttrib( geom::Attrib::TEX_COORD_0, texCoords );
 
     mMaskBatch = gl::Batch::create( mMaskMesh, mShader );
 }
@@ -208,6 +195,7 @@ void AlienLanderApp::update()
 
     float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
     // TODO: Need to change the focus point to remain parallel as we descend
+    mCamera.setPerspective( 40.0f, 1.0f, 0.5f, 3.0f );
     mCamera.lookAt( vec3( 0.0f, 1.5f * z, 1.0f ), vec3(0.0,0.1,0.0), vec3( 0, 1, 0 ) );
 }
 
@@ -219,19 +207,22 @@ void AlienLanderApp::draw()
     {
         gl::ScopedMatrices matrixScope;
         gl::setMatrices( mCamera );
+        gl::translate(-0.5, 0.0, -0.5);
+
+        gl::ScopedDepth depthScope(true);
 
         mShader->uniform( "textureMatrix", mTextureMatrix );
 
         uint indiciesInLine = mPoints;
         uint indiciesInMask = mPoints * 2;
-        // { int i = (getElapsedFrames()) % mLines; // stepping
-        // for (int i = mLines - 1; i >= 0; --i) { // front to back
-        for (int i = 0; i <= mLines; ++i) { // back to front
+        for (int i = mLines - 1; i >= 0; --i) { // front to back
+//        for (int i = 0; i <= mLines; ++i) { // back to front
+            gl::color( mBlack );
+//            gl::color( Color::gray( i % 2 == 1 ? 0.5 : 0.25) );
+            mMaskBatch->draw( i * indiciesInMask, indiciesInMask);
+
             gl::color( mBlue );
             mLineBatch->draw( i * indiciesInLine, indiciesInLine);
-
-            gl::color( Color::gray( i % 2 == 1 ? 0.5 : 0.25) );
-            mMaskBatch->draw( i * indiciesInMask, indiciesInMask);
         }
 
         // FIXME: Direction of rotation seems backwards
