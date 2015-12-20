@@ -122,7 +122,7 @@ void AlienLanderApp::buildMeshes()
 
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
-            vertCoords.push_back( vec3( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5) );
+            vertCoords.push_back( vec3( x / (float)mPoints - 0.5, 1, z / (float)mLines - 0.5) );
             texCoords.push_back( vec2( x / (float)mPoints, z / (float)mLines ) );
         }
     }
@@ -141,16 +141,17 @@ void AlienLanderApp::buildMeshes()
 
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
-            vec3 vert = vec3( x / (float)mPoints - 0.5, 0.0, z / (float)mLines - 0.5);
+            // To speed up the vertex shader it only does the texture lookup
+            // for vertexes with y values greater than 0. This way we can build
+            // a strip: 1 1 1  that will become: 2 9 3
+            //          |\|\|                    |\|\|
+            //          0 0 0                    0 0 0
+            vec3 vert = vec3( x / (float)mPoints - 0.5, 1, z / (float)mLines - 0.5);
+            vertCoords.push_back(vert);
+            vert.y = 0.0;
+            vertCoords.push_back(vert);
+
             vec2 coord = vec2( x / (float)mPoints, z / (float)mLines );
-
-            vertCoords.push_back(vert);
-            // the vertex shader just uses the texture value as an offset to
-            // the y value so setting one below the first value will create a
-            // skewed strip to mask the lines behind it.
-            vert.y = -0.5;
-            vertCoords.push_back(vert);
-
             texCoords.push_back( coord );
             texCoords.push_back( coord );
         }
@@ -185,7 +186,7 @@ void AlienLanderApp::update()
     float scale = mShip.mPos.z;
     mTextureMatrix = glm::translate( vec3( 0.5, 0.5, 0 ) );
     mTextureMatrix = glm::rotate( mTextureMatrix, mShip.mPos.w, vec3( 0, 0, 1 ) );
-    mTextureMatrix = glm::scale( mTextureMatrix, vec3( scale, scale, 1.0f ) );
+    mTextureMatrix = glm::scale( mTextureMatrix, vec3( scale, scale, 0.25 ) );
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( mShip.mPos.x, mShip.mPos.y, 0 ) );
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( -0.5, -0.5, 0 ) );
 

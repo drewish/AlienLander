@@ -11,11 +11,17 @@ in vec2			ciTexCoord0;
 out vec4		Color;
 
 void main( void ) {
-    // TODO: should probably get rid of this zoom rather than hard coding it.
-    float zoom = 0.5;
-
-    vec4 heightSample = texture( uTex0, (textureMatrix * vec4(ciTexCoord0, 0, 1)).st );
     Color = ciColor;
-    gl_Position = ciModelViewProjection * ciPosition;
-    gl_Position.y += heightSample.r * ( 1.0 - zoom );
+    vec4 position = ciPosition;
+    // Skip the texture lookup for positions with 0 or negative y values. We use
+    // y=0 for the bottom of the masking strip and it doesn't need to move.
+    if (position.y > 0.0) {
+        // Texture is 2d but our matrix should affect the z values...
+        vec4 texturePos = textureMatrix * vec4( ciTexCoord0, 1, 1 );
+        // so pull the red channel (it's a grayscale image) and scale by the
+        // value in the matrix.
+        position.y = texture( uTex0, texturePos.xy ).r * texturePos.z;
+    }
+    gl_Position = ciModelViewProjection * position;
+
 }
