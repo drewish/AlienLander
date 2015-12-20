@@ -16,7 +16,8 @@ void Ship::setup()
 
 void Ship::update()
 {
-    mAcc = vec4(0, 0, -0.00001, 0); // gravity
+    // Start with gravity
+    mAcc = vec4(0, 0, -0.00001, 0);
 
     // x/y thrusters should be summed up into a vector then apply that
     // considering the ship's heading (stored in mPos.w)
@@ -33,7 +34,6 @@ void Ship::update()
     mPos += mVel;
 
     // Consider this landed...
-//    mPos.z = math<float>::clamp(mPos.z, 0, 1);
     if (mPos.z <= 0) {
         mVel = vec4();
         mPos.z = 0;

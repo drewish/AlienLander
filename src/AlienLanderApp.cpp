@@ -1,6 +1,7 @@
 /*
 TODO list:
  - standardize on either Y or Z axis for heights
+ - Figure out why texture's x coordinates are flipped
  - fix point of rotation, should move towards closer edge as you descend
  - Use touch for scaling/rotation/panning
  - Compute point in texture, extract height
@@ -36,8 +37,8 @@ public:
     void update();
     void draw();
 
-    uint mPoints = 21;
-    uint mLines = 40;
+    uint mPoints = 50;
+    uint mLines = 50;
 
     Ship mShip;
     vector<SegmentDisplay> mDisplays;
@@ -61,8 +62,9 @@ public:
 
 void prepareSettings( App::Settings *settings )
 {
+    settings->setMultiTouchEnabled( true );
     settings->setHighDensityDisplayEnabled();
-    settings->setWindowSize(800, 800);
+    settings->setWindowSize( 800, 800 );
 }
 
 void AlienLanderApp::setup()
@@ -167,8 +169,8 @@ void AlienLanderApp::update()
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( mShip.mPos.x, mShip.mPos.y, 0 ) );
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( -0.5, -0.5, 0 ) );
 
-    vec4 vel = mShip.mVel;
-    vec4 acc = mShip.mAcc;
+    const vec4 &vel = mShip.mVel;
+    const vec4 &acc = mShip.mAcc;
     float fps = getAverageFps();
     boost::format zeroToOne( "%+07.5f" );
     boost::format shortForm( "%+08.4f" );
@@ -243,7 +245,6 @@ void AlienLanderApp::mouseMove( MouseEvent event )
 
 void AlienLanderApp::touchesMoved( TouchEvent event )
 {
-    return;
     vec2 mDelta1, mDelta2;
 
     // TODO treat the two deltas as forces acting on a rigid body.
