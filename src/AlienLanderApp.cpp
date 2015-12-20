@@ -191,35 +191,39 @@ void AlienLanderApp::update()
 
 void AlienLanderApp::draw()
 {
-
     gl::clear( mBlack, true );
 
     {
         gl::ScopedMatrices matrixScope;
         gl::setMatrices( mCamera );
-        gl::translate(-0.5, 0.0, -0.5);
 
         gl::ScopedDepth depthScope(true);
 
         mShader->uniform( "textureMatrix", mTextureMatrix );
 
+        // Center the model
+        gl::translate(-0.5, 0.0, -0.5);
+
         uint indiciesInLine = mPoints;
         uint indiciesInMask = mPoints * 2;
-        for (int i = mLines - 1; i >= 0; --i) { // front to back
-//        for (int i = 0; i <= mLines; ++i) { // back to front
+        // Draw front to back to take advantage of the depth buffer.
+        for (int i = mLines - 1; i >= 0; --i) {
             gl::color( mBlack );
-//            gl::color( Color::gray( i % 2 == 1 ? 0.5 : 0.25) );
-            mMaskBatch->draw( i * indiciesInMask, indiciesInMask);
+            // Draw masks with alternating colors for debugging
+            // gl::color( Color::gray( i % 2 == 1 ? 0.5 : 0.25) );
+            mMaskBatch->draw( i * indiciesInMask, indiciesInMask );
 
             gl::color( mBlue );
-            mLineBatch->draw( i * indiciesInLine, indiciesInLine);
+            mLineBatch->draw( i * indiciesInLine, indiciesInLine );
         }
 
-        // FIXME: Direction of rotation seems backwards
-//        // Vector pointing north
-//        gl::color( mRed );
-//        vec2 vec = vec2(cos(mShip.mPos.w), sin(mShip.mPos.w)) / vec2(40.0);
-//        gl::drawVector(vec3(0.0,1/10.0,0.0), vec3(vec.x,1/10.0, vec.y), 1/20.0, 1/100.0);
+        // Compass vector pointing north
+        if ( false ) {
+            gl::color( mRed );
+            vec3 origin = vec3( 0.5, 0.2, 0.5 );
+            vec3 heading = glm::rotateY( vec3(0.01, 0, 0), mShip.mPos.w );
+            gl::drawVector( origin, origin + heading, 0.05, 0.01);
+        }
     }
 
     for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
