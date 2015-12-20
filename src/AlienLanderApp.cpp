@@ -3,8 +3,9 @@ TODO list:
  - standardize on either Y or Z axis for heights
  - fix point of rotation, should move towards closer edge as you descend
  - Use touch for scaling/rotation/panning
+ - Compute point in texture, extract height
+ - Display height over ground
  - Detect landing/collision
- - Compute/Display height over ground
 */
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
@@ -69,15 +70,12 @@ void AlienLanderApp::setup()
     try {
         mTexture = gl::Texture::create( loadImage( loadResource( RES_US_SQUARE ) ) );
         mTexture->bind( 0 );
-
     }
     catch( ... ) {
         console() << "unable to load the texture file!" << std::endl;
     }
     mTexture->setWrap(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
-
-//    mShader = gl::getStockShader( gl::ShaderDef().texture() );
     try {
         mShader = ci::gl::GlslProg::create(
             ci::app::loadResource( RES_VERT ),
@@ -97,7 +95,6 @@ void AlienLanderApp::setup()
 
     mShip.setup();
 
-    uint digits = 14;
     mDisplays.push_back( SegmentDisplay(10).position( vec2( 5 ) ).scale( 2 ) );
     mDisplays.push_back( SegmentDisplay(10).rightOf( mDisplays.back() ) );
     mDisplays.push_back( SegmentDisplay(35).below( mDisplays.front() ) );
@@ -115,41 +112,34 @@ void AlienLanderApp::setup()
 
 void AlienLanderApp::buildMeshes()
 {
-    vector<vec3> vertCoords;
+    vector<vec3> lineCoords;
+    vector<vec3> maskCoords;
 
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
-            vertCoords.push_back( vec3( x / (float)mPoints, 1, z / (float)mLines ) );
-        }
-    }
-	mLineMesh = gl::VboMesh::create( vertCoords.size(), GL_LINE_STRIP, {
-		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
-	});
-    mLineMesh->bufferAttrib( geom::Attrib::POSITION, vertCoords );
-    mLineBatch = gl::Batch::create( mLineMesh, mShader );
+            vec3 vert = vec3( x / (float) mPoints, 1, z / (float) mLines );
+            lineCoords.push_back( vert );
 
-    // * * *
-
-    vertCoords.clear();
-
-    for( uint z = 0; z < mLines; ++z ) {
-        for( uint x = 0; x < mPoints; ++x ) {
+            maskCoords.push_back( vert );
             // To speed up the vertex shader it only does the texture lookup
             // for vertexes with y values greater than 0. This way we can build
             // a strip: 1 1 1  that will become: 2 9 3
             //          |\|\|                    |\|\|
             //          0 0 0                    0 0 0
-            vec3 vert = vec3( x / (float)mPoints, 1, z / (float)mLines );
-            vertCoords.push_back(vert);
             vert.y = 0.0;
-            vertCoords.push_back(vert);
+            maskCoords.push_back( vert );
         }
     }
-	mMaskMesh = gl::VboMesh::create( vertCoords.size(), GL_TRIANGLE_STRIP, {
-		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
-	});
-    mMaskMesh->bufferAttrib( geom::Attrib::POSITION, vertCoords );
+    mLineMesh = gl::VboMesh::create( lineCoords.size(), GL_LINE_STRIP, {
+        gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
+    });
+    mLineMesh->bufferAttrib( geom::Attrib::POSITION, lineCoords );
+    mLineBatch = gl::Batch::create( mLineMesh, mShader );
 
+    mMaskMesh = gl::VboMesh::create( maskCoords.size(), GL_TRIANGLE_STRIP, {
+        gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
+    });
+    mMaskMesh->bufferAttrib( geom::Attrib::POSITION, maskCoords );
     mMaskBatch = gl::Batch::create( mMaskMesh, mShader );
 }
 
