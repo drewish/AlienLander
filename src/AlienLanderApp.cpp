@@ -39,6 +39,8 @@ public:
 
     uint mPoints = 50;
     uint mLines = 50;
+    bool mShowHud = true;
+    bool mShowCompass = false;
 
     Ship mShip;
     vector<SegmentDisplay> mDisplays;
@@ -162,33 +164,38 @@ void AlienLanderApp::update()
     // TODO Need to figure our what to do with the scale... should probably
     // affect the distance to the points rather than being handled by moving
     // the camera...
-    float scale = mShip.mPos.z;
+    float scale = math<float>::clamp( mShip.mPos.z, 0.2, 1.0 );
     mTextureMatrix = glm::translate( vec3( 0.5, 0.5, 0 ) );
     mTextureMatrix = glm::rotate( mTextureMatrix, mShip.mPos.w, vec3( 0, 0, 1 ) );
     mTextureMatrix = glm::scale( mTextureMatrix, vec3( scale, scale, 0.25 ) );
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( mShip.mPos.x, mShip.mPos.y, 0 ) );
     mTextureMatrix = glm::translate( mTextureMatrix, vec3( -0.5, -0.5, 0 ) );
 
-    const vec4 &vel = mShip.mVel;
-    const vec4 &acc = mShip.mAcc;
-    float fps = getAverageFps();
-    boost::format zeroToOne( "%+07.5f" );
-    boost::format shortForm( "%+08.4f" );
-    mDisplays[0].display( "ALT " + (zeroToOne % mShip.mPos.z).str() );
-    mDisplays[1]
-        .display( "FPS " + (shortForm % fps).str() )
-        .colors( ColorA( fps < 50 ? mRed : mBlue, 0.8 ), ColorA( mDarkBlue, 0.8 ) );
-    mDisplays[2].display( " X " + (shortForm % vel.x).str()
-        + "  Y " + (shortForm % vel.y).str()
-        + "  R " + (shortForm % vel.w).str() );
-    mDisplays[3].display( "dX " + (shortForm % acc.x).str()
-        + " dY " + (shortForm % acc.y).str()
-        + " dR " + (shortForm % acc.w).str() );
-
-    float z = math<float>::clamp(mShip.mPos.z, 0.0, 1.0);
     // TODO: Need to change the focus point to remain parallel as we descend
     mCamera.setPerspective( 40.0f, 1.0f, 0.5f, 3.0f );
-    mCamera.lookAt( vec3( 0.0f, 1.5f * z, 1.0f ), vec3(0.0,0.1,0.0), vec3( 0, 1, 0 ) );
+    mCamera.lookAt( vec3( 0.0f, 1.5f * mShip.mPos.z, 1.0f ), vec3(0.0,0.1,0.0), vec3( 0, 1, 0 ) );
+
+    if ( mShowHud ) {
+        const vec4 &vel = mShip.mVel;
+        const vec4 &acc = mShip.mAcc;
+        float fps = getAverageFps();
+        boost::format zeroToOne( "%+07.5f" );
+        boost::format shortForm( "%+08.4f" );
+        mDisplays[0].display( "ALT " + (zeroToOne % mShip.mPos.z).str() );
+        mDisplays[1]
+            .display( "FPS " + (shortForm % fps).str() )
+            .colors( ColorA( fps < 50 ? mRed : mBlue, 0.8 ), ColorA( mDarkBlue, 0.8 ) );
+        mDisplays[2].display(
+            " X " + (shortForm % vel.x).str() + " " +
+            " Y " + (shortForm % vel.y).str() + " " +
+            " R " + (shortForm % vel.w).str()
+        );
+        mDisplays[3].display(
+            "dX " + (shortForm % acc.x).str() + " " +
+            "dY " + (shortForm % acc.y).str() + " " +
+            "dR " + (shortForm % acc.w).str()
+        );
+    }
 }
 
 void AlienLanderApp::draw()
@@ -220,7 +227,7 @@ void AlienLanderApp::draw()
         }
 
         // Compass vector pointing north
-        if ( false ) {
+        if ( mShowCompass ) {
             gl::color( mRed );
             vec3 origin = vec3( 0.5, 0.2, 0.5 );
             vec3 heading = glm::rotateY( vec3(0.01, 0, 0), mShip.mPos.w );
@@ -228,8 +235,10 @@ void AlienLanderApp::draw()
         }
     }
 
-    for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
-        display->draw();
+    if ( mShowHud ) {
+        for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
+            display->draw();
+        }
     }
 }
 
@@ -266,6 +275,12 @@ void AlienLanderApp::keyDown( KeyEvent event )
     switch( event.getCode() ) {
         case KeyEvent::KEY_ESCAPE:
             quit();
+            break;
+        case KeyEvent::KEY_h:
+            mShowHud = !mShowHud;
+            break;
+        case KeyEvent::KEY_c:
+            mShowCompass = !mShowCompass;
             break;
         default:
             mShip.keyDown(event);
