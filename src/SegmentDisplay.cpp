@@ -7,13 +7,14 @@
 //
 
 #include "SegmentDisplay.h"
+#include "Resources.h"
 
 using namespace ci;
 using namespace ci::geom;
 using namespace std;
 
 const uint SEGMENTS = 16;
-const uint VERTS_PER_SEGMENT = 6;
+const uint VERTS_PER_SEGMENT = 12;
 // Awesome font stolen from http://www.msarnoff.org/alpha32/
 // The first 32, non-printable ASCII characters are omitted.
 const uint CHAR_OFFSET = 32;
@@ -176,159 +177,163 @@ void SegmentDisplay::setup()
     // We need to color segments individually so we can't share vertexes between
     // them.
 
-    int totalVertices = VERTS_PER_SEGMENT * SEGMENTS * mDigits;
-	vector<gl::VboMesh::Layout> bufferLayout = {
-		gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
-		gl::VboMesh::Layout().usage( GL_DYNAMIC_DRAW ).attrib( geom::Attrib::COLOR, 4 )
-	};
-	mMesh = gl::VboMesh::create( totalVertices, GL_TRIANGLE_STRIP, bufferLayout);
+    vector<vec3> verts = {
+        // Segment 0
+        vec3( 1, 1, 1 ),    vec3( 2, 2, 1 ),   vec3( 2, 0, 1 ),
+        vec3( 2, 2, 1 ),    vec3( 2, 0, 1 ),   vec3( 6, 2, 1 ),
+        vec3( 2, 0, 1 ),    vec3( 6, 2, 1 ),   vec3( 6, 0, 1 ),
+        vec3( 6, 2, 1 ),    vec3( 6, 0, 1 ),   vec3( 7, 1, 1 ),
 
-    mat3 transform = mat3();
+        // Segment 1 (Segment 0 + vec(6, 0))
+        vec3( 7, 1, 1 ),    vec3( 8, 2, 1 ),    vec3( 8, 0, 1 ),
+        vec3( 8, 2, 1 ),    vec3( 8, 0, 1 ),    vec3( 12, 2, 1 ),
+        vec3( 8, 0, 1 ),    vec3( 12, 2, 1 ),   vec3( 12, 0, 1 ),
+        vec3( 12, 2, 1 ),   vec3( 12, 0, 1 ),   vec3( 13, 1, 1 ),
+
+        // Segment 2
+        vec3( 13, 1, 1 ),   vec3( 12, 2, 1 ),   vec3( 14, 2, 1 ),
+        vec3( 12, 2, 1 ),   vec3( 14, 2, 1 ),   vec3( 12, 10, 1 ),
+        vec3( 14, 2, 1 ),   vec3( 12, 10, 1 ),  vec3( 14, 10, 1 ),
+        vec3( 12, 10, 1 ),  vec3( 14, 10, 1 ),  vec3( 13, 11, 1 ),
+
+        // Segment 3 (Segment 2 + vec(0, 10))
+        vec3( 13, 11, 1 ),  vec3( 12, 12, 1 ),  vec3( 14, 12, 1 ),
+        vec3( 12, 12, 1 ),  vec3( 14, 12, 1 ),  vec3( 12, 20, 1 ),
+        vec3( 14, 12, 1 ),  vec3( 12, 20, 1 ),  vec3( 14, 20, 1 ),
+        vec3( 12, 20, 1 ),  vec3( 14, 20, 1 ),  vec3( 13, 21, 1 ),
+
+        // Segment 4 (Segment 0 + vec(6, 20))
+        vec3( 7, 21, 1 ),   vec3( 8, 22, 1 ),   vec3( 8, 20, 1 ),
+        vec3( 8, 22, 1 ),   vec3( 8, 20, 1 ),   vec3( 12, 22, 1 ),
+        vec3( 8, 20, 1 ),   vec3( 12, 22, 1 ),  vec3( 12, 20, 1 ),
+        vec3( 12, 22, 1 ),  vec3( 12, 20, 1 ),  vec3( 13, 21, 1 ),
+
+        // Segment 5 (Segment 0 + vec(0, 20))
+        vec3( 1, 21, 1 ),   vec3( 2, 22, 1 ),   vec3( 2, 20, 1 ),
+        vec3( 2, 22, 1 ),   vec3( 2, 20, 1 ),   vec3( 6, 22, 1 ),
+        vec3( 2, 20, 1 ),   vec3( 6, 22, 1 ),   vec3( 6, 20, 1 ),
+        vec3( 6, 22, 1 ),   vec3( 6, 20, 1 ),   vec3( 7, 21, 1 ),
+
+        // Segment 6 (Segment 2 + vec(-12, -10))
+        vec3( 1, 11, 1 ),   vec3( 0, 12, 1 ),   vec3( 2, 12, 1 ),
+        vec3( 0, 12, 1 ),   vec3( 2, 12, 1 ),   vec3( 0, 20, 1 ),
+        vec3( 2, 12, 1 ),   vec3( 0, 20, 1 ),   vec3( 2, 20, 1 ),
+        vec3( 0, 20, 1 ),   vec3( 2, 20, 1 ),   vec3( 1, 21, 1 ),
+
+        // Segment 7 (Segment 2 + vec(-12, 0)
+        vec3( 1, 1, 1 ),    vec3( 0, 2, 1 ),    vec3( 2, 2, 1 ),
+        vec3( 0, 2, 1 ),    vec3( 2, 2, 1 ),    vec3( 0, 10, 1 ),
+        vec3( 2, 2, 1 ),    vec3( 0, 10, 1 ),   vec3( 2, 10, 1 ),
+        vec3( 0, 10, 1 ),   vec3( 2, 10, 1 ),   vec3( 1, 11, 1 ),
+
+        // Segment 8 (Segment 0 + vec(0, 10))
+        vec3( 1, 11, 1 ),   vec3( 2, 12, 1 ),   vec3( 2, 10, 1 ),
+        vec3( 2, 12, 1 ),   vec3( 2, 10, 1 ),   vec3( 6, 12, 1 ),
+        vec3( 2, 10, 1 ),   vec3( 6, 12, 1 ),   vec3( 6, 10, 1 ),
+        vec3( 6, 12, 1 ),   vec3( 6, 10, 1 ),   vec3( 7, 11, 1 ),
+
+        // Segment 9 (Segment 0 + vec(6, 10))
+        vec3( 7, 11, 1 ),   vec3( 8, 12, 1 ),   vec3( 8, 10, 1 ),
+        vec3( 8, 12, 1 ),   vec3( 8, 10, 1 ),   vec3( 12, 12, 1 ),
+        vec3( 8, 10, 1 ),   vec3( 12, 12, 1 ),  vec3( 12, 10, 1 ),
+        vec3( 12, 12, 1 ),  vec3( 12, 10, 1 ),  vec3( 13, 11, 1 ),
+
+        // Segment A
+        vec3( 2, 2, 1 ),    vec3( 2, 4.3, 1 ),   vec3( 3, 2, 1 ),
+        vec3( 2, 4.3, 1 ),  vec3( 3, 2, 1 ),     vec3( 5.3, 10, 1 ),
+        vec3( 3, 2, 1 ),    vec3( 5.3, 10, 1 ),  vec3( 6, 7.2, 1 ),
+        vec3( 5.3, 10, 1 ), vec3( 6, 7.2, 1 ),   vec3( 6, 10, 1 ),
+
+        // Segment B (Segment 2 + vec(-6, 0))
+        vec3( 7, 1, 1 ),    vec3( 6, 2, 1 ),     vec3( 8, 2, 1 ),
+        vec3( 6, 2, 1 ),    vec3( 8, 2, 1 ),     vec3( 6, 10, 1 ),
+        vec3( 8, 2, 1 ),    vec3( 6, 10, 1 ),    vec3( 8, 10, 1 ),
+        vec3( 6, 10, 1 ),   vec3( 8, 10, 1 ),    vec3( 7, 11, 1 ),
+
+        // Segment C
+        vec3( 8, 10, 1 ),   vec3( 8.7, 10, 1 ),  vec3( 8, 7.2, 1 ),
+        vec3( 8.7, 10, 1 ), vec3( 8, 7.2, 1 ),   vec3( 12, 4.3, 1 ),
+        vec3( 8, 7.2, 1 ),  vec3( 12, 4.3, 1 ),  vec3( 11, 2, 1 ),
+        vec3( 12, 4.3, 1 ), vec3( 11, 2, 1 ),    vec3( 12, 2, 1 ),
+
+        // Segment D
+        vec3( 8, 12, 1 ),   vec3( 8, 14.8, 1 ),  vec3( 8.7, 12, 1 ),
+        vec3( 8, 14.8, 1 ), vec3( 8.7, 12, 1 ),  vec3( 11, 20, 1 ),
+        vec3( 8.7, 12, 1 ), vec3( 11, 20, 1 ),   vec3( 12, 17.7, 1 ),
+        vec3( 11, 20, 1 ),  vec3( 12, 17.7, 1 ), vec3( 12, 20, 1 ),
+
+        // Segment E (Segment 2 + vec(-6, 10))
+        vec3( 7, 11, 1 ),   vec3( 6, 12, 1 ),    vec3( 8, 12, 1 ),
+        vec3( 6, 12, 1 ),   vec3( 8, 12, 1 ),    vec3( 6, 20, 1 ),
+        vec3( 8, 12, 1 ),   vec3( 6, 20, 1 ),    vec3( 8, 20, 1 ),
+        vec3( 6, 20, 1 ),   vec3( 8, 20, 1 ),    vec3( 7, 21, 1 ),
+
+        // Segment F
+        vec3( 2, 20, 1 ),   vec3( 3, 20, 1 ),    vec3( 2, 17.7, 1 ),
+        vec3( 3, 20, 1 ),   vec3( 2, 17.7, 1 ),  vec3( 6, 14.8, 1 ),
+        vec3( 2, 17.7, 1 ), vec3( 6, 14.8, 1 ),  vec3( 5.3, 12, 1 ),
+        vec3( 6, 14.8, 1 ), vec3( 5.3, 12, 1 ),  vec3( 6, 12, 1 ),
+    };
+
+    // If there's a slant apply it.
     if ( mSlant != 0.0) {
         // We want to shear from the baseline of the text rather than the top so
         // move the text up perform the shear, then put it back.
         vec2 offset = vec2( 0, mDimensions.y );
-        transform = translate( transform, offset );
-        transform = shearY( transform, mSlant );
-        transform = translate( transform, -offset );
+        mat3 transform = translate( shearY( translate( mat3(), offset ), mSlant ), -offset );
+        for ( auto v = verts.begin(); v != verts.end(); ++v ) {
+            *v = transform * *v;
+        }
     }
 
-    vector<vec3> verts;
-    for ( int i = 0; i < mDigits; i++ ) {
-        // Segment 0
-        verts.push_back( transform * vec3(  1,  1, 1 ) );
-        verts.push_back( transform * vec3(  2,  2, 1 ) );
-        verts.push_back( transform * vec3(  2,  0, 1 ) );
-        verts.push_back( transform * vec3(  6,  2, 1 ) );
-        verts.push_back( transform * vec3(  6,  0, 1 ) );
-        verts.push_back( transform * vec3(  7,  1, 1 ) );
-
-        // Segment 1 (Segment 0 + vec(6, 0))
-        verts.push_back( transform * vec3(  7,  1, 1 ) );
-        verts.push_back( transform * vec3(  8,  2, 1 ) );
-        verts.push_back( transform * vec3(  8,  0, 1 ) );
-        verts.push_back( transform * vec3( 12,  2, 1 ) );
-        verts.push_back( transform * vec3( 12,  0, 1 ) );
-        verts.push_back( transform * vec3( 13,  1, 1 ) );
-
-        // Segment 2
-        verts.push_back( transform * vec3( 13,  1, 1 ) );
-        verts.push_back( transform * vec3( 12,  2, 1 ) );
-        verts.push_back( transform * vec3( 14,  2, 1 ) );
-        verts.push_back( transform * vec3( 12, 10, 1 ) );
-        verts.push_back( transform * vec3( 14, 10, 1 ) );
-        verts.push_back( transform * vec3( 13, 11, 1 ) );
-
-        // Segment 3 (Segment 2 + vec(0, 10))
-        verts.push_back( transform * vec3( 13, 11, 1 ) );
-        verts.push_back( transform * vec3( 12, 12, 1 ) );
-        verts.push_back( transform * vec3( 14, 12, 1 ) );
-        verts.push_back( transform * vec3( 12, 20, 1 ) );
-        verts.push_back( transform * vec3( 14, 20, 1 ) );
-        verts.push_back( transform * vec3( 13, 21, 1 ) );
-
-        // Segment 4 (Segment 0 + vec(6, 20))
-        verts.push_back( transform * vec3(  7, 21, 1 ) );
-        verts.push_back( transform * vec3(  8, 22, 1 ) );
-        verts.push_back( transform * vec3(  8, 20, 1 ) );
-        verts.push_back( transform * vec3( 12, 22, 1 ) );
-        verts.push_back( transform * vec3( 12, 20, 1 ) );
-        verts.push_back( transform * vec3( 13, 21, 1 ) );
-
-        // Segment 5 (Segment 0 + vec(0, 20))
-        verts.push_back( transform * vec3(  1, 21, 1 ) );
-        verts.push_back( transform * vec3(  2, 22, 1 ) );
-        verts.push_back( transform * vec3(  2, 20, 1 ) );
-        verts.push_back( transform * vec3(  6, 22, 1 ) );
-        verts.push_back( transform * vec3(  6, 20, 1 ) );
-        verts.push_back( transform * vec3(  7, 21, 1 ) );
-
-        // Segment 6 (Segment 2 + vec(-12, -10))
-        verts.push_back( transform * vec3(  1, 11, 1 ) );
-        verts.push_back( transform * vec3(  0, 12, 1 ) );
-        verts.push_back( transform * vec3(  2, 12, 1 ) );
-        verts.push_back( transform * vec3(  0, 20, 1 ) );
-        verts.push_back( transform * vec3(  2, 20, 1 ) );
-        verts.push_back( transform * vec3(  1, 21, 1 ) );
-
-        // Segment 7 (Segment 2 + vec(-12, 0)
-        verts.push_back( transform * vec3(  1,  1, 1 ) );
-        verts.push_back( transform * vec3(  0,  2, 1 ) );
-        verts.push_back( transform * vec3(  2,  2, 1 ) );
-        verts.push_back( transform * vec3(  0, 10, 1 ) );
-        verts.push_back( transform * vec3(  2, 10, 1 ) );
-        verts.push_back( transform * vec3(  1, 11, 1 ) );
-
-        // Segment 8 (Segment 0 + vec(0, 10))
-        verts.push_back( transform * vec3(  1, 11, 1 ) );
-        verts.push_back( transform * vec3(  2, 12, 1 ) );
-        verts.push_back( transform * vec3(  2, 10, 1 ) );
-        verts.push_back( transform * vec3(  6, 12, 1 ) );
-        verts.push_back( transform * vec3(  6, 10, 1 ) );
-        verts.push_back( transform * vec3(  7, 11, 1 ) );
-
-        // Segment 9 (Segment 0 + vec(6, 10))
-        verts.push_back( transform * vec3(  7, 11, 1 ) );
-        verts.push_back( transform * vec3(  8, 12, 1 ) );
-        verts.push_back( transform * vec3(  8, 10, 1 ) );
-        verts.push_back( transform * vec3( 12, 12, 1 ) );
-        verts.push_back( transform * vec3( 12, 10, 1 ) );
-        verts.push_back( transform * vec3( 13, 11, 1 ) );
-
-        // Segment A
-        verts.push_back( transform * vec3( 2.0,  2.0, 1 ) );
-        verts.push_back( transform * vec3( 2.0,  4.3, 1 ) );
-        verts.push_back( transform * vec3( 3.0,  2.0, 1 ) );
-        verts.push_back( transform * vec3( 5.3, 10.0, 1 ) );
-        verts.push_back( transform * vec3( 6.0,  7.2, 1 ) );
-        verts.push_back( transform * vec3( 6.0, 10.0, 1 ) );
-
-        // Segment B (Segment 2 + vec(-6, 0))
-        verts.push_back( transform * vec3(  7,  1, 1 ) );
-        verts.push_back( transform * vec3(  6,  2, 1 ) );
-        verts.push_back( transform * vec3(  8,  2, 1 ) );
-        verts.push_back( transform * vec3(  6, 10, 1 ) );
-        verts.push_back( transform * vec3(  8, 10, 1 ) );
-        verts.push_back( transform * vec3(  7, 11, 1 ) );
-
-        // Segment C
-        verts.push_back( transform * vec3(  8.0, 10.0, 1 ) );
-        verts.push_back( transform * vec3(  8.7, 10.0, 1 ) );
-        verts.push_back( transform * vec3(  8.0,  7.2, 1 ) );
-        verts.push_back( transform * vec3( 12.0,  4.3, 1 ) );
-        verts.push_back( transform * vec3( 11.0,  2.0, 1 ) );
-        verts.push_back( transform * vec3( 12.0,  2.0, 1 ) );
-
-        // Segment D
-        verts.push_back( transform * vec3(  8.0, 12.0, 1 ) );
-        verts.push_back( transform * vec3(  8.0, 14.8, 1 ) );
-        verts.push_back( transform * vec3(  8.7, 12.0, 1 ) );
-        verts.push_back( transform * vec3( 11.0, 20.0, 1 ) );
-        verts.push_back( transform * vec3( 12.0, 17.7, 1 ) );
-        verts.push_back( transform * vec3( 12.0, 20.0, 1 ) );
-
-        // Segment E (Segment 2 + vec(-6, 10))
-        verts.push_back( transform * vec3(  7, 11, 1 ) );
-        verts.push_back( transform * vec3(  6, 12, 1 ) );
-        verts.push_back( transform * vec3(  8, 12, 1 ) );
-        verts.push_back( transform * vec3(  6, 20, 1 ) );
-        verts.push_back( transform * vec3(  8, 20, 1 ) );
-        verts.push_back( transform * vec3(  7, 21, 1 ) );
-
-        // Segment F
-        verts.push_back( transform * vec3( 2.0, 20.0, 1 ) );
-        verts.push_back( transform * vec3( 3.0, 20.0, 1 ) );
-        verts.push_back( transform * vec3( 2.0, 17.7, 1 ) );
-        verts.push_back( transform * vec3( 6.0, 14.8, 1 ) );
-        verts.push_back( transform * vec3( 5.3, 12.0, 1 ) );
-        verts.push_back( transform * vec3( 6.0, 12.0, 1 ) );
-
-        transform = translate( transform, vec2( mDimensions.x, 0 ) );
+    // Group the verts in each segment using the bone index so the shader knows
+    // how to color them.
+    vector<int> segmentBones;
+    for ( uint s = 0; s < SEGMENTS; ++s ) {
+        for ( uint v = 0; v < VERTS_PER_SEGMENT; ++v ) {
+            segmentBones.push_back( s );
+        }
     }
-    mMesh->bufferAttrib( geom::Attrib::POSITION, verts );
 
-    auto shader = gl::getStockShader( gl::ShaderDef().color() );
-    mBatch = gl::Batch::create( mMesh, shader );
+    vector<gl::VboMesh::Layout> bufferLayout = {
+        gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
+        gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::AttribInfo( geom::Attrib::BONE_INDEX, DataType::INTEGER, 1, 0, 0, 0 ) ),
+    };
+    gl::VboMeshRef mesh = gl::VboMesh::create( verts.size(), GL_TRIANGLES, bufferLayout );
+    mesh->bufferAttrib( geom::Attrib::POSITION, verts );
+    mesh->bufferAttrib( geom::Attrib::BONE_INDEX, segmentBones );
+
+    std::vector<vec3> characterPosition;
+    std::vector<int> segmentValue;
+
+    for ( uint d = 0; d < mDigits; ++d ) {
+        characterPosition.push_back( vec3(mDimensions.x * d, 0, 0) );
+        segmentValue.push_back( 0 );
+    }
+
+    // TODO: See if we can merge these two VBOs of per instance data. Not clear
+    // to me if they have to be of the same data type though.
+    mInstanceValueVbo = gl::Vbo::create( GL_ARRAY_BUFFER, segmentValue.size() * sizeof( int ), segmentValue.data(), GL_DYNAMIC_DRAW );
+    geom::BufferLayout instanceColorLayout;
+    instanceColorLayout.append( geom::Attrib::CUSTOM_0, 1, 0, 0, 1 /* per instance */ );
+    mesh->appendVbo( instanceColorLayout, mInstanceValueVbo );
+
+    mInstancePositionVbo = gl::Vbo::create( GL_ARRAY_BUFFER, characterPosition.size() * sizeof( vec3 ), characterPosition.data(), GL_STATIC_DRAW );
+    geom::BufferLayout instancePositionLayout;
+    instancePositionLayout.append( geom::Attrib::CUSTOM_1, 3, 0, 0, 1 /* per instance */ );
+    mesh->appendVbo( instancePositionLayout, mInstancePositionVbo );
+
+    auto shader = ci::gl::GlslProg::create(
+        ci::app::loadResource( RES_SEGMENT_VERT ),
+        ci::app::loadResource( RES_SEGMENT_FRAG )
+    );
+    shader->uniform( "offColor", mColors[0] );
+    shader->uniform( "onColor", mColors[1] );
+
+    mBatch = gl::Batch::create( mesh, shader, {
+        { geom::Attrib::CUSTOM_0, "vInstanceValue" },
+        { geom::Attrib::CUSTOM_1, "vInstancePosition" },
+    } );
 }
 
 // TODO: would be good to store the string and only update the VBO when the
@@ -336,26 +341,18 @@ void SegmentDisplay::setup()
 SegmentDisplay& SegmentDisplay::display( string s )
 {
     int len = s.length();
-
-	auto mappedColorAttrib = mMesh->mapAttrib4f( geom::Attrib::COLOR, false );
-    for ( int j = 0; j < mDigits; ++j ) {
+    int *value = (int*)mInstanceValueVbo->mapReplace();
+    for ( uint d = 0; d < mDigits; ++d ) {
         char c = ' ';
         // Make sure we're don't go off the end of the string and that the
         // character is one in our table.
-        if ( j < len && s[j] > CHAR_OFFSET && s[j] < CHAR_OFFSET + CHAR_LENGTH ) {
-            c = s[j];
+        if ( d < len && s[d] > CHAR_OFFSET && s[d] < CHAR_OFFSET + CHAR_LENGTH ) {
+            c = s[d];
         }
 
-        int pattern = charPatterns[(int)c - CHAR_OFFSET];
-        for ( uint i = 0; i < SEGMENTS; ++i ) {
-            vec4 color = (pattern & (1 << i)) ? mColors[1] : mColors[0];
-            for ( uint vert = 0; vert < VERTS_PER_SEGMENT; ++vert ) {
-                *mappedColorAttrib = vec4(color);
-                ++mappedColorAttrib;
-            }
-        }
+        *value++ = charPatterns[(int)c - CHAR_OFFSET];
     }
-	mappedColorAttrib.unmap();
+    mInstanceValueVbo->unmap();
 
     return *this;
 }
@@ -366,8 +363,6 @@ void SegmentDisplay::draw() const
     gl::translate( mPosition );
     gl::scale( vec2( mScale ) );
 
-    for ( uint start = 0; start < mDigits * SEGMENTS * VERTS_PER_SEGMENT; start += VERTS_PER_SEGMENT ) {
-        mBatch->draw( start, VERTS_PER_SEGMENT );
-    }
+    mBatch->drawInstanced( mDigits );
 }
 

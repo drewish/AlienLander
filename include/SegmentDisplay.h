@@ -37,11 +37,13 @@ protected:
     uint            mDigits; // Number of characters in display
     ci::vec2        mPosition;
     float           mScale;
-    float           mSlant;
+    float           mSlant; // Positive leans right, negative leans left
     ci::vec2        mDimensions;
-    ci::vec4        mColors[2];
-    gl::VboMeshRef  mMesh;
+    ci::vec4        mColors[2]; // 0 is off 1 is on
     gl::BatchRef    mBatch;
+
+    gl::VboRef		mInstancePositionVbo;
+    gl::VboRef		mInstanceValueVbo;
 };
 
 #endif /* defined(__Segments__SegmentDisplay__) */

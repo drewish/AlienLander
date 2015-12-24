@@ -24,6 +24,8 @@
 		5F6D63511A53193E001004EC /* frag.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D634E1A53193E001004EC /* frag.glsl */; };
 		5F6D63521A53193E001004EC /* usa-square.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D634F1A53193E001004EC /* usa-square.png */; };
 		5F6D63531A53193E001004EC /* vert.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D63501A53193E001004EC /* vert.glsl */; };
+		5F72461F1C2C8D0300D11BC0 /* segment.frag in Resources */ = {isa = PBXBuildFile; fileRef = 5F72461D1C2C8D0300D11BC0 /* segment.frag */; };
+		5F7246201C2C8D0300D11BC0 /* segment.vert in Resources */ = {isa = PBXBuildFile; fileRef = 5F72461E1C2C8D0300D11BC0 /* segment.vert */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C42E9BA72DCF4A808AD3154F /* AlienLanderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */; };
 /* End PBXBuildFile section */
@@ -57,6 +59,8 @@
 		5F6D634E1A53193E001004EC /* frag.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = frag.glsl; path = ../resources/frag.glsl; sourceTree = "<group>"; };
 		5F6D634F1A53193E001004EC /* usa-square.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "usa-square.png"; path = "../resources/usa-square.png"; sourceTree = "<group>"; };
 		5F6D63501A53193E001004EC /* vert.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = vert.glsl; path = ../resources/vert.glsl; sourceTree = "<group>"; };
+		5F72461D1C2C8D0300D11BC0 /* segment.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = segment.frag; path = ../resources/segment.frag; sourceTree = "<group>"; };
+		5F72461E1C2C8D0300D11BC0 /* segment.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = segment.vert; path = ../resources/segment.vert; sourceTree = "<group>"; };
 		5FD5594A1A5A5C7800C1532E /* AlienLander.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = AlienLander.profdata; sourceTree = "<group>"; };
 		6CA7596354C54D97914CCD89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* AlienLander.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlienLander.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -167,6 +171,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				5F72461D1C2C8D0300D11BC0 /* segment.frag */,
+				5F72461E1C2C8D0300D11BC0 /* segment.vert */,
 				5F6D634F1A53193E001004EC /* usa-square.png */,
 				5F6D63501A53193E001004EC /* vert.glsl */,
 				5F6D634E1A53193E001004EC /* frag.glsl */,
@@ -251,7 +257,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				5F6D63521A53193E001004EC /* usa-square.png in Resources */,
+				5F72461F1C2C8D0300D11BC0 /* segment.frag in Resources */,
 				2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */,
+				5F7246201C2C8D0300D11BC0 /* segment.vert in Resources */,
 				49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */,
 				5F6D63531A53193E001004EC /* vert.glsl in Resources */,
 				5F6D63511A53193E001004EC /* frag.glsl in Resources */,
