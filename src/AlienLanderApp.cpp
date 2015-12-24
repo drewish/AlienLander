@@ -1,8 +1,9 @@
 /*
 TODO list:
- - standardize on either Y or Z axis for heights
+ - fix point of rotation/scaling, should move towards closer edge as you descend
+ - Figure out why craft x & y aren't displayed
  - Figure out why texture's x coordinates are flipped
- - fix point of rotation, should move towards closer edge as you descend
+ - standardize on either Y or Z axis for heights
  - Use touch for scaling/rotation/panning
  - Compute point in texture, extract height
  - Display height over ground
@@ -48,8 +49,6 @@ public:
     gl::BatchRef    mLineBatch;
     gl::BatchRef    mMaskBatch;
 
-    gl::VboMeshRef	mMaskMesh;
-    gl::VboMeshRef	mLineMesh;
     gl::TextureRef	mTexture;
     gl::GlslProgRef	mShader;
     CameraPersp     mCamera;
@@ -99,10 +98,10 @@ void AlienLanderApp::setup()
 
     mShip.setup();
 
-    mDisplays.push_back( SegmentDisplay(10).position( vec2( 5 ) ).scale( 2 ) );
-    mDisplays.push_back( SegmentDisplay(10).rightOf( mDisplays.back() ) );
-    mDisplays.push_back( SegmentDisplay(35).below( mDisplays.front() ) );
-    mDisplays.push_back( SegmentDisplay(35).below( mDisplays.back() ) );
+    mDisplays.push_back( SegmentDisplay( 10 ).position( vec2( 5 ) ).scale( 2 ) );
+    mDisplays.push_back( SegmentDisplay( 10 ).rightOf( mDisplays.back() ) );
+    mDisplays.push_back( SegmentDisplay( 35 ).below( mDisplays.front() ) );
+    mDisplays.push_back( SegmentDisplay( 35 ).below( mDisplays.back() ) );
 
     for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
         display->colors( ColorA( mBlue, 0.8 ), ColorA( mDarkBlue, 0.8 ) );
@@ -134,17 +133,17 @@ void AlienLanderApp::buildMeshes()
             maskCoords.push_back( vert );
         }
     }
-    mLineMesh = gl::VboMesh::create( lineCoords.size(), GL_LINE_STRIP, {
+    gl::VboMeshRef lineMesh = gl::VboMesh::create( lineCoords.size(), GL_LINE_STRIP, {
         gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
     });
-    mLineMesh->bufferAttrib( geom::Attrib::POSITION, lineCoords );
-    mLineBatch = gl::Batch::create( mLineMesh, mShader );
+    lineMesh->bufferAttrib( geom::Attrib::POSITION, lineCoords );
+    mLineBatch = gl::Batch::create( lineMesh, mShader );
 
-    mMaskMesh = gl::VboMesh::create( maskCoords.size(), GL_TRIANGLE_STRIP, {
+    gl::VboMeshRef maskMesh = gl::VboMesh::create( maskCoords.size(), GL_TRIANGLE_STRIP, {
         gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
     });
-    mMaskMesh->bufferAttrib( geom::Attrib::POSITION, maskCoords );
-    mMaskBatch = gl::Batch::create( mMaskMesh, mShader );
+    maskMesh->bufferAttrib( geom::Attrib::POSITION, maskCoords );
+    mMaskBatch = gl::Batch::create( maskMesh, mShader );
 }
 
 void AlienLanderApp::resize()
@@ -181,6 +180,7 @@ void AlienLanderApp::update()
         float fps = getAverageFps();
         boost::format zeroToOne( "%+07.5f" );
         boost::format shortForm( "%+08.4f" );
+
         mDisplays[0].display( "ALT " + (zeroToOne % mShip.mPos.z).str() );
         mDisplays[1]
             .display( "FPS " + (shortForm % fps).str() )
@@ -225,14 +225,14 @@ void AlienLanderApp::draw()
             gl::color( mBlue );
             mLineBatch->draw( i * indiciesInLine, indiciesInLine );
         }
+    }
 
-        // Compass vector pointing north
-        if ( mShowCompass ) {
-            gl::color( mRed );
-            vec3 origin = vec3( 0.5, 0.2, 0.5 );
-            vec3 heading = glm::rotateY( vec3(0.01, 0, 0), mShip.mPos.w );
-            gl::drawVector( origin, origin + heading, 0.05, 0.01);
-        }
+    // Compass vector pointing north
+    if ( mShowCompass ) {
+        gl::color( mRed );
+        vec3 origin = vec3( 0.5, 0.2, 0.5 );
+        vec3 heading = glm::rotateY( vec3(0.01, 0, 0), mShip.mPos.w );
+        gl::drawVector( origin, origin + heading, 0.05, 0.01);
     }
 
     if ( mShowHud ) {
