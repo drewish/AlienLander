@@ -4,6 +4,7 @@ TODO list:
  - Figure out why craft x & y aren't displayed
  - Figure out why texture's x coordinates are flipped
  - standardize on either Y or Z axis for heights
+ - Shader to draw thicker lines
  - Use touch for scaling/rotation/panning
  - Compute point in texture, extract height
  - Display height over ground
