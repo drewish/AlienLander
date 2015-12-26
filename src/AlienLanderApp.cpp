@@ -105,7 +105,7 @@ void AlienLanderApp::setup()
     mDisplays.push_back( SegmentDisplay( 35 ).below( mDisplays.back() ) );
 
     for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
-        display->colors( ColorA( mBlue, 0.8 ), ColorA( mDarkBlue, 0.8 ) );
+        display->colors( ColorA( mBlue, 0.8 ), ColorA( mDarkBlue, 0.4 ) );
         display->setup();
     }
 
@@ -122,14 +122,15 @@ void AlienLanderApp::buildMeshes()
     for( uint z = 0; z < mLines; ++z ) {
         for( uint x = 0; x < mPoints; ++x ) {
             vec3 vert = vec3( x / (float) mPoints, 1, z / (float) mLines );
+
             lineCoords.push_back( vert );
 
-            maskCoords.push_back( vert );
             // To speed up the vertex shader it only does the texture lookup
             // for vertexes with y values greater than 0. This way we can build
             // a strip: 1 1 1  that will become: 2 9 3
             //          |\|\|                    |\|\|
             //          0 0 0                    0 0 0
+            maskCoords.push_back( vert );
             vert.y = 0.0;
             maskCoords.push_back( vert );
         }

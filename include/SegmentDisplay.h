@@ -30,15 +30,18 @@ public:
     void draw() const;
 
     const vec2 position() const { return mPosition; }
-    float height() const { return mDimensions.y * mScale; }
-    float width() const { return ( mDimensions.x * mDigits ) * mScale; }
+    float height() const;
+    float width() const;
+
+    // Returns the pattern for a printable ASCII character in our font.
+    // Out of range values return blank.
+    uint16_t valueOf( const char );
 
 protected:
     uint            mDigits; // Number of characters in display
     ci::vec2        mPosition;
     float           mScale;
     float           mSlant; // Positive leans right, negative leans left
-    ci::vec2        mDimensions;
     ci::vec4        mColors[2]; // 0 is off 1 is on
     gl::BatchRef    mBatch;
 
