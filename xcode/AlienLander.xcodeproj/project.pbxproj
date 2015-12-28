@@ -21,6 +21,10 @@
 		49C8F2821A0DD15100AE0DF4 /* Ship.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C8F2801A0DD15100AE0DF4 /* Ship.cpp */; };
 		49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */ = {isa = PBXBuildFile; fileRef = 49FBDEF31A03FB5F0019CAB2 /* usa.png */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
+		5F6396421C2E6F02008A49DD /* lines.frag in Resources */ = {isa = PBXBuildFile; fileRef = 5F63963E1C2E6F02008A49DD /* lines.frag */; };
+		5F6396431C2E6F02008A49DD /* lines.vert in Resources */ = {isa = PBXBuildFile; fileRef = 5F63963F1C2E6F02008A49DD /* lines.vert */; };
+		5F6396441C2E6F02008A49DD /* lines1.geom in Resources */ = {isa = PBXBuildFile; fileRef = 5F6396401C2E6F02008A49DD /* lines1.geom */; };
+		5F6396451C2E6F02008A49DD /* lines2.geom in Resources */ = {isa = PBXBuildFile; fileRef = 5F6396411C2E6F02008A49DD /* lines2.geom */; };
 		5F6D63511A53193E001004EC /* frag.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D634E1A53193E001004EC /* frag.glsl */; };
 		5F6D63521A53193E001004EC /* usa-square.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D634F1A53193E001004EC /* usa-square.png */; };
 		5F6D63531A53193E001004EC /* vert.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D63501A53193E001004EC /* vert.glsl */; };
@@ -56,6 +60,10 @@
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		5323E6B50EAFCA7E003A9687 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = /System/Library/Frameworks/QTKit.framework; sourceTree = "<absolute>"; };
 		53A9217A3EE34D10A08774F0 /* AlienLander_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = "\"\""; path = AlienLander_Prefix.pch; sourceTree = "<group>"; };
+		5F63963E1C2E6F02008A49DD /* lines.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = lines.frag; path = ../resources/lines.frag; sourceTree = "<group>"; };
+		5F63963F1C2E6F02008A49DD /* lines.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = lines.vert; path = ../resources/lines.vert; sourceTree = "<group>"; };
+		5F6396401C2E6F02008A49DD /* lines1.geom */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = lines1.geom; path = ../resources/lines1.geom; sourceTree = "<group>"; };
+		5F6396411C2E6F02008A49DD /* lines2.geom */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = lines2.geom; path = ../resources/lines2.geom; sourceTree = "<group>"; };
 		5F6D634E1A53193E001004EC /* frag.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = frag.glsl; path = ../resources/frag.glsl; sourceTree = "<group>"; };
 		5F6D634F1A53193E001004EC /* usa-square.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "usa-square.png"; path = "../resources/usa-square.png"; sourceTree = "<group>"; };
 		5F6D63501A53193E001004EC /* vert.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = vert.glsl; path = ../resources/vert.glsl; sourceTree = "<group>"; };
@@ -171,6 +179,10 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				5F63963F1C2E6F02008A49DD /* lines.vert */,
+				5F6396401C2E6F02008A49DD /* lines1.geom */,
+				5F6396411C2E6F02008A49DD /* lines2.geom */,
+				5F63963E1C2E6F02008A49DD /* lines.frag */,
 				5F72461D1C2C8D0300D11BC0 /* segment.frag */,
 				5F72461E1C2C8D0300D11BC0 /* segment.vert */,
 				5F6D634F1A53193E001004EC /* usa-square.png */,
@@ -256,11 +268,15 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F6396451C2E6F02008A49DD /* lines2.geom in Resources */,
 				5F6D63521A53193E001004EC /* usa-square.png in Resources */,
 				5F72461F1C2C8D0300D11BC0 /* segment.frag in Resources */,
 				2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */,
+				5F6396421C2E6F02008A49DD /* lines.frag in Resources */,
 				5F7246201C2C8D0300D11BC0 /* segment.vert in Resources */,
+				5F6396431C2E6F02008A49DD /* lines.vert in Resources */,
 				49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */,
+				5F6396441C2E6F02008A49DD /* lines1.geom in Resources */,
 				5F6D63531A53193E001004EC /* vert.glsl in Resources */,
 				5F6D63511A53193E001004EC /* frag.glsl in Resources */,
 			);

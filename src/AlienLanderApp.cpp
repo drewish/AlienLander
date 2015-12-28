@@ -116,35 +116,62 @@ void AlienLanderApp::setup()
 
 void AlienLanderApp::buildMeshes()
 {
-    vector<vec3> lineCoords;
-    vector<vec3> maskCoords;
+    vector<vec3> lineVerts;
+    vector<uint16_t> lineIndicies;
+    vector<vec3> maskVerts;
 
     for( uint z = 0; z < mLines; ++z ) {
+        // Dummy adjacency node at the beginning of the line
+        lineVerts.push_back( vec3( -0.1, 1.0, z / (float) mLines ) );
         for( uint x = 0; x < mPoints; ++x ) {
-            vec3 vert = vec3( x / (float) mPoints, 1, z / (float) mLines );
-
-            lineCoords.push_back( vert );
+            vec3 vert = vec3( x / (float) mPoints, 0.0, z / (float) mLines );
 
             // To speed up the vertex shader it only does the texture lookup
             // for vertexes with y values greater than 0. This way we can build
             // a strip: 1 1 1  that will become: 2 9 3
             //          |\|\|                    |\|\|
             //          0 0 0                    0 0 0
-            maskCoords.push_back( vert );
             vert.y = 0.0;
-            maskCoords.push_back( vert );
+            maskVerts.push_back( vert );
+            vert.y = 1.0;
+            maskVerts.push_back( vert );
+
+//            vert.z += 0.01;
+            lineVerts.push_back( vert );
+        }
+        // Dummy adjacency node at the end.
+        lineVerts.push_back( vec3( 1.1, 1.0, z / (float) mLines ) );
+
+        // Line shader needs adjacency info so pass indexes in
+//        lineIndicies.reserve( (lineVerts.size() - 2) * 4 );
+        int lineStart = ( mPoints + 2 ) * z;
+        for( size_t i = 1; i < mPoints; ++i ) {
+            lineIndicies.push_back( lineStart + i - 1 );
+            lineIndicies.push_back( lineStart + i );
+            lineIndicies.push_back( lineStart + i + 1 );
+            lineIndicies.push_back( lineStart + i + 2 );
         }
     }
-    gl::VboMeshRef lineMesh = gl::VboMesh::create( lineCoords.size(), GL_LINE_STRIP, {
-        gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
-    });
-    lineMesh->bufferAttrib( geom::Attrib::POSITION, lineCoords );
-    mLineBatch = gl::Batch::create( lineMesh, mShader );
 
-    gl::VboMeshRef maskMesh = gl::VboMesh::create( maskCoords.size(), GL_TRIANGLE_STRIP, {
+
+    gl::VboMeshRef lineMesh = gl::VboMesh::create( lineVerts.size(), GL_LINES_ADJACENCY_EXT, {
+        gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
+    }, lineIndicies.size());
+    lineMesh->bufferAttrib( geom::Attrib::POSITION, lineVerts );
+    lineMesh->bufferIndices( lineIndicies.size() * sizeof( uint16_t ), lineIndicies.data() );
+
+    gl::GlslProgRef lineShader = ci::gl::GlslProg::create(
+                                       ci::app::loadResource( RES_LINES_VERT ),
+                                       ci::app::loadResource( RES_LINES_FRAG ),
+                                       ci::app::loadResource( RES_LINES_GEOM )
+                                       );
+    mLineBatch = gl::Batch::create( lineMesh, lineShader );
+
+
+    gl::VboMeshRef maskMesh = gl::VboMesh::create( maskVerts.size(), GL_TRIANGLE_STRIP, {
         gl::VboMesh::Layout().usage( GL_STATIC_DRAW ).attrib( geom::Attrib::POSITION, 3 ),
     });
-    maskMesh->bufferAttrib( geom::Attrib::POSITION, maskCoords );
+    maskMesh->bufferAttrib( geom::Attrib::POSITION, maskVerts );
     mMaskBatch = gl::Batch::create( maskMesh, mShader );
 }
 
@@ -210,22 +237,28 @@ void AlienLanderApp::draw()
 
         gl::ScopedDepth depthScope(true);
 
-        mShader->uniform( "textureMatrix", mTextureMatrix );
+        mLineBatch->getGlslProg()->uniform( "WIN_SCALE", vec2( getWindowSize() ) ); // casting to vec2 is mandatory!
+        mLineBatch->getGlslProg()->uniform( "MITER_LIMIT", 4.0f );
+        mLineBatch->getGlslProg()->uniform( "THICKNESS", 4.0f );
+
+        mLineBatch->getGlslProg()->uniform( "textureMatrix", mTextureMatrix );
+        mMaskBatch->getGlslProg()->uniform( "textureMatrix", mTextureMatrix );
 
         // Center the model
         gl::translate(-0.5, 0.0, -0.5);
 
-        uint indiciesInLine = mPoints;
-        uint indiciesInMask = mPoints * 2;
+        const uint indiciesInMaskChunk = mPoints * 2;
+        const uint indiciesInLineChunk = ( mPoints - 1 ) * 4;
         // Draw front to back to take advantage of the depth buffer.
         for (int i = mLines - 1; i >= 0; --i) {
+            gl::color( mBlue );
+//            gl::color( i % 2 == 1 ? mRed : mBlue );
+            mLineBatch->draw( i * indiciesInLineChunk, indiciesInLineChunk );
+
             gl::color( mBlack );
             // Draw masks with alternating colors for debugging
-            // gl::color( Color::gray( i % 2 == 1 ? 0.5 : 0.25) );
-            mMaskBatch->draw( i * indiciesInMask, indiciesInMask );
-
-            gl::color( mBlue );
-            mLineBatch->draw( i * indiciesInLine, indiciesInLine );
+//            gl::color( ColorA::gray( i % 2 == 1 ? 0.5 : 0.25, 1) );
+            mMaskBatch->draw( i * indiciesInMaskChunk, indiciesInMaskChunk );
         }
     }
 
