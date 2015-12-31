@@ -20,8 +20,8 @@ TODO list:
 #include "cinder/Utilities.h"
 #include <boost/format.hpp>
 #include "Resources.h"
-#include "SegmentDisplay.h"
 #include "Ship.h"
+#include "UnionJack.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -45,7 +45,7 @@ public:
     bool mShowCompass = false;
 
     Ship mShip;
-    vector<SegmentDisplay> mDisplays;
+    vector<UnionJack> mDisplays;
 
     gl::BatchRef    mLineBatch;
     gl::BatchRef    mMaskBatch;
@@ -99,14 +99,13 @@ void AlienLanderApp::setup()
 
     mShip.setup();
 
-    mDisplays.push_back( SegmentDisplay( 10 ).position( vec2( 5 ) ).scale( 2 ) );
-    mDisplays.push_back( SegmentDisplay( 10 ).rightOf( mDisplays.back() ) );
-    mDisplays.push_back( SegmentDisplay( 35 ).below( mDisplays.front() ) );
-    mDisplays.push_back( SegmentDisplay( 35 ).below( mDisplays.back() ) );
+    mDisplays.push_back( UnionJack( 10 ).position( vec2( 5 ) ).scale( 2 ) );
+    mDisplays.push_back( UnionJack( 10 ).rightOf( mDisplays.back() ) );
+    mDisplays.push_back( UnionJack( 35 ).below( mDisplays.front() ) );
+    mDisplays.push_back( UnionJack( 35 ).below( mDisplays.back() ) );
 
-    for ( auto display = mDisplays.begin(); display != mDisplays.end(); ++display ) {
-        display->colors( ColorA( mBlue, 0.8 ), ColorA( mDarkBlue, 0.4 ) );
-        display->setup();
+    for ( auto &display : mDisplays ) {
+        display.colors( ColorA( mBlue, 0.8 ), ColorA( mDarkBlue, 0.4 ) );
     }
 
 //    setFullScreen( true );

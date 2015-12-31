@@ -1,0 +1,3 @@
+[submodule "blocks/UnionJack"]
+	path = blocks/UnionJack
+	url = https://github.com/drewish/UnionJack.git

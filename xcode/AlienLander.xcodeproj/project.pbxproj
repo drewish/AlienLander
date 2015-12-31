@@ -13,7 +13,7 @@
 		00B784B50FF439BC000DE1D7 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B10FF439BC000DE1D7 /* AudioUnit.framework */; };
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 526114993F034EFEAD0FF5B3 /* CinderApp.icns */; };
-		498566431A0C917B00A76295 /* SegmentDisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 498566421A0C917B00A76295 /* SegmentDisplay.cpp */; };
+		4948386A1C35927900540E35 /* UnionJack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 494838691C35927900540E35 /* UnionJack.cpp */; };
 		49AEF2A91BCA119E00BDBD68 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49AEF2A81BCA119E00BDBD68 /* IOSurface.framework */; };
 		49AEF2AB1BCA11A800BDBD68 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49AEF2AA1BCA11A800BDBD68 /* IOKit.framework */; };
 		49AEF2AD1BCA11B000BDBD68 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49AEF2AC1BCA11B000BDBD68 /* AVFoundation.framework */; };
@@ -24,8 +24,6 @@
 		5F6D63511A53193E001004EC /* frag.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D634E1A53193E001004EC /* frag.glsl */; };
 		5F6D63521A53193E001004EC /* usa-square.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D634F1A53193E001004EC /* usa-square.png */; };
 		5F6D63531A53193E001004EC /* vert.glsl in Resources */ = {isa = PBXBuildFile; fileRef = 5F6D63501A53193E001004EC /* vert.glsl */; };
-		5F72461F1C2C8D0300D11BC0 /* segment.frag in Resources */ = {isa = PBXBuildFile; fileRef = 5F72461D1C2C8D0300D11BC0 /* segment.frag */; };
-		5F7246201C2C8D0300D11BC0 /* segment.vert in Resources */ = {isa = PBXBuildFile; fileRef = 5F72461E1C2C8D0300D11BC0 /* segment.vert */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C42E9BA72DCF4A808AD3154F /* AlienLanderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */; };
 /* End PBXBuildFile section */
@@ -40,8 +38,8 @@
 		191AC45670D244B4BECCEE81 /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		498566411A0C917100A76295 /* SegmentDisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SegmentDisplay.h; path = ../include/SegmentDisplay.h; sourceTree = "<group>"; };
-		498566421A0C917B00A76295 /* SegmentDisplay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SegmentDisplay.cpp; path = ../src/SegmentDisplay.cpp; sourceTree = "<group>"; };
+		494838691C35927900540E35 /* UnionJack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UnionJack.cpp; path = ../blocks/UnionJack/src/UnionJack.cpp; sourceTree = "<group>"; };
+		4948386B1C35928500540E35 /* UnionJack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnionJack.h; path = ../blocks/UnionJack/include/UnionJack.h; sourceTree = "<group>"; };
 		49AEF2A81BCA119E00BDBD68 /* IOSurface.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOSurface.framework; path = System/Library/Frameworks/IOSurface.framework; sourceTree = SDKROOT; };
 		49AEF2AA1BCA11A800BDBD68 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		49AEF2AC1BCA11B000BDBD68 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -59,8 +57,6 @@
 		5F6D634E1A53193E001004EC /* frag.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = frag.glsl; path = ../resources/frag.glsl; sourceTree = "<group>"; };
 		5F6D634F1A53193E001004EC /* usa-square.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "usa-square.png"; path = "../resources/usa-square.png"; sourceTree = "<group>"; };
 		5F6D63501A53193E001004EC /* vert.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = vert.glsl; path = ../resources/vert.glsl; sourceTree = "<group>"; };
-		5F72461D1C2C8D0300D11BC0 /* segment.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = segment.frag; path = ../resources/segment.frag; sourceTree = "<group>"; };
-		5F72461E1C2C8D0300D11BC0 /* segment.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = segment.vert; path = ../resources/segment.vert; sourceTree = "<group>"; };
 		5FD5594A1A5A5C7800C1532E /* AlienLander.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = AlienLander.profdata; sourceTree = "<group>"; };
 		6CA7596354C54D97914CCD89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* AlienLander.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlienLander.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -92,6 +88,7 @@
 		01B97315FEAEA392516A2CEA /* Blocks */ = {
 			isa = PBXGroup;
 			children = (
+				494838661C35924700540E35 /* UnionJack */,
 			);
 			name = Blocks;
 			sourceTree = "<group>";
@@ -100,7 +97,6 @@
 			isa = PBXGroup;
 			children = (
 				FF73BB1805134F7BB644E5AA /* AlienLanderApp.cpp */,
-				498566421A0C917B00A76295 /* SegmentDisplay.cpp */,
 				49C8F2801A0DD15100AE0DF4 /* Ship.cpp */,
 			);
 			name = Source;
@@ -162,7 +158,6 @@
 			children = (
 				53A9217A3EE34D10A08774F0 /* AlienLander_Prefix.pch */,
 				191AC45670D244B4BECCEE81 /* Resources.h */,
-				498566411A0C917100A76295 /* SegmentDisplay.h */,
 				49C8F2831A0DD1A500AE0DF4 /* Ship.h */,
 			);
 			name = Headers;
@@ -171,8 +166,6 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				5F72461D1C2C8D0300D11BC0 /* segment.frag */,
-				5F72461E1C2C8D0300D11BC0 /* segment.vert */,
 				5F6D634F1A53193E001004EC /* usa-square.png */,
 				5F6D63501A53193E001004EC /* vert.glsl */,
 				5F6D634E1A53193E001004EC /* frag.glsl */,
@@ -193,6 +186,31 @@
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		494838661C35924700540E35 /* UnionJack */ = {
+			isa = PBXGroup;
+			children = (
+				494838671C35924E00540E35 /* include */,
+				494838681C35925800540E35 /* src */,
+			);
+			name = UnionJack;
+			sourceTree = "<group>";
+		};
+		494838671C35924E00540E35 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				4948386B1C35928500540E35 /* UnionJack.h */,
+			);
+			name = include;
+			sourceTree = "<group>";
+		};
+		494838681C35925800540E35 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				494838691C35927900540E35 /* UnionJack.cpp */,
+			);
+			name = src;
 			sourceTree = "<group>";
 		};
 		5FD559491A5A5C7800C1532E /* OptimizationProfiles */ = {
@@ -257,9 +275,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5F6D63521A53193E001004EC /* usa-square.png in Resources */,
-				5F72461F1C2C8D0300D11BC0 /* segment.frag in Resources */,
 				2D2A5A2BC34D4ADF8C548077 /* CinderApp.icns in Resources */,
-				5F7246201C2C8D0300D11BC0 /* segment.vert in Resources */,
 				49FBDEF41A03FB5F0019CAB2 /* usa.png in Resources */,
 				5F6D63531A53193E001004EC /* vert.glsl in Resources */,
 				5F6D63511A53193E001004EC /* frag.glsl in Resources */,
@@ -273,8 +289,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4948386A1C35927900540E35 /* UnionJack.cpp in Sources */,
 				49C8F2821A0DD15100AE0DF4 /* Ship.cpp in Sources */,
-				498566431A0C917B00A76295 /* SegmentDisplay.cpp in Sources */,
 				C42E9BA72DCF4A808AD3154F /* AlienLanderApp.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
