@@ -6,6 +6,7 @@ uniform sampler2D   uTex0;
 
 in vec4			ciPosition;
 in vec4			ciColor;
+
 out vec4		Color;
 
 void main( void ) {
